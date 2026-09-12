@@ -1,0 +1,8 @@
+factor_id,activity,scope,unit,co2_factor,ch4_factor,n2o_factor,co2e_factor,factor_unit,source,source_year,region,notes
+
+IN-DIESEL-STAT-IPCC2006,Diesel combustion,Scope 1,litre,2.708,0.00011,0.000022,2.72,kg CO2e/litre,IPCC 2006 Guidelines Vol.2 Energy Ch.2 Table 2.2 + Ch.1 Table 1.2,2006,Global,Stationary combustion default; CO2e calculated using IPCC AR6 100-year GWP
+IN-PETROL-STAT-IPCC2006,Petrol combustion - stationary,Scope 1,litre,2.272,0.0000984,0.0000197,2.28,kg CO2e/litre,IPCC 2006 Guidelines Vol.2 Energy Ch.2 Table 2.2 + Ch.1 Table 1.2,2006,Global,Stationary combustion default; CO2e calculated using IPCC AR6 100-year GWP
+IN-NATGAS-STAT-IPCC2006,Natural gas combustion,Scope 1,SCM,2.154,0.0000384,0.00000384,2.156,kg CO2e/SCM,IPCC 2006 Guidelines Vol.2 Energy Ch.2 Table 2.2 + Ch.1 Table 1.2,2006,Global,Default factor; site-specific gas GCV can improve accuracy
+IN-LDV-DIESEL-IPCC2006,Diesel LDV road travel,Scope 1 or Scope 3,litre,2.708,0.0001426,0.0001426,2.75,kg CO2e/litre,IPCC 2006 Guidelines Vol.2 Energy Ch.3 Tables 3.2.1 and 3.2.2,2006,Global,Scope 1 if company-owned/controlled; Scope 3 if third-party vehicle; Tier-1 default
+IN-ELEC-CEA-V22,Grid electricity,Scope 2,kWh,0.675,NA,NA,NA,kg CO2/kWh,Central Electricity Authority CEA CO2 Baseline Database Version 22.0,2026,India,CO2-only factor; do not label as CO2e
+IN-AIR-DOM-IGP2015,Domestic air travel,Scope 3,passenger-km,0.121,NA,NA,NA,kg CO2/passenger-km,India GHG Program Air Transport Emission Factors Version 1.0,2015,India,CO2-only factor; no verified India-specific CO2e factor available
