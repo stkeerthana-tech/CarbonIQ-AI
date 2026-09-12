@@ -121,7 +121,7 @@ export function AuditTrail() {
         <div className="glass-panel" style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
           <FileCheck2 size={40} style={{ margin: '0 auto 1rem', opacity: 0.4 }} />
           <h3 style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>No audit records available.</h3>
-          <p style={{ fontSize: '0.85rem', marginBottom: '1.25rem' }}>Submit an activity to generate your first verified audit trail.</p>
+          <p style={{ fontSize: '0.85rem', marginBottom: '1.25rem' }}>Record an activity to generate your first backend audit trail.</p>
           <Link to="/activities/new" className="btn btn-primary" style={{ display: 'inline-flex' }}>
             <span>Record First Activity</span>
           </Link>
@@ -285,7 +285,7 @@ export function AuditTrail() {
                         Evidence Source &amp; Timestamp
                       </div>
                       <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                        {audit?.source || emission?.source || 'IPCC 2006 Guidelines for National Greenhouse Gas Inventories'}
+                        {audit?.source || emission?.source || 'No source recorded.'}
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                         <Clock size={13} />

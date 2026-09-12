@@ -107,6 +107,7 @@ export function Sidebar({ isOpen, onClose }) {
               <NavLink
                 key={item.to}
                 to={item.to}
+                end
                 onClick={onClose}
                 style={({ isActive }) => ({
                   display: 'flex',

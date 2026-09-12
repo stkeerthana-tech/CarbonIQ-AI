@@ -29,6 +29,16 @@ logger = logging.getLogger(__name__)
 activities_bp = Blueprint("activities", __name__, url_prefix="/api/activities")
 
 
+def _record_anomaly(record: ActivityRecord) -> dict:
+    """Compute the backend anomaly flag against the other stored records."""
+    return detect_anomaly(
+        record.company_id,
+        record.activity,
+        record.quantity,
+        exclude_activity_id=record.id,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Validation helpers
 # ---------------------------------------------------------------------------
@@ -253,6 +263,7 @@ def list_activities():
     result = []
     for rec in records:
         item = rec.to_dict()
+        item["anomaly"] = _record_anomaly(rec)
         if rec.emission_result:
             item["emission"] = rec.emission_result.to_dict()
         result.append(item)
@@ -277,6 +288,7 @@ def get_activity(activity_id: int):
         return error
 
     data = record.to_dict()
+    data["anomaly"] = _record_anomaly(record)
 
     if record.emission_result:
         data["emission"] = record.emission_result.to_dict()

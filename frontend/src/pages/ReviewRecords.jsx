@@ -48,12 +48,11 @@ export function ReviewRecords() {
       try {
         const res = await api.activities.list(activeCompany.id);
         if (res.success && res.data) {
-          // Filter records that need review or are high quantity
+          // Use backend status and anomaly flags only; do not infer flags from quantity.
           const flagged = res.data.filter(
             (item) =>
               item.emission?.status === 'Needs Review' ||
-              item.quantity > 5000 || // highlight potential high values
-              reviewDecisions[item.id]
+              item.anomaly?.is_anomaly === true
           );
           setActivities(flagged);
         }
@@ -103,6 +102,8 @@ export function ReviewRecords() {
   };
 
   const isAuditorOrAdmin = user?.role === 'auditor' || user?.role === 'admin';
+  const needsReviewCount = activities.filter((item) => item.emission?.status === 'Needs Review').length;
+  const anomalyCount = activities.filter((item) => item.anomaly?.is_anomaly === true).length;
 
   return (
     <div className="animate-fade-in">
@@ -151,6 +152,30 @@ export function ReviewRecords() {
         </div>
       )}
 
+      {!loading && !error && (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '0.75rem',
+            marginBottom: '1.5rem',
+          }}
+        >
+          <div className="glass-panel" style={{ padding: '0.9rem 1rem' }}>
+            <strong style={{ display: 'block', fontSize: '0.85rem' }}>Needs Review</strong>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              {needsReviewCount > 0 ? `${needsReviewCount} record(s) currently require review.` : 'No records currently require review.'}
+            </span>
+          </div>
+          <div className="glass-panel" style={{ padding: '0.9rem 1rem' }}>
+            <strong style={{ display: 'block', fontSize: '0.85rem' }}>Anomalies</strong>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              {anomalyCount > 0 ? `${anomalyCount} anomalous record(s) detected.` : 'No anomalies detected.'}
+            </span>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
           <div className="spinner" style={{ width: '32px', height: '32px', border: '3px solid var(--border-subtle)', borderTopColor: 'var(--primary)', borderRadius: '50%', margin: '0 auto 1rem' }} />
@@ -160,10 +185,10 @@ export function ReviewRecords() {
         <div className="glass-panel" style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
           <ShieldCheck size={42} color="var(--primary)" style={{ margin: '0 auto 1rem' }} />
           <h3 style={{ fontSize: '1.15rem', color: 'var(--text-primary)', marginBottom: '0.35rem' }}>
-            No flagged records.
+            No records currently require review.
           </h3>
           <p style={{ fontSize: '0.85rem' }}>
-            All current activity records have verified CO2e factors with no detected anomalies.
+            No anomalies detected.
           </p>
         </div>
       ) : (
@@ -193,6 +218,12 @@ export function ReviewRecords() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                       <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Event #{item.id}</span>
                       <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>&bull; {item.date}</span>
+                      {item.emission?.status === 'Needs Review' && (
+                        <StatusBadge status="Needs Review" />
+                      )}
+                      {item.anomaly?.is_anomaly === true && (
+                        <StatusBadge isAnomaly />
+                      )}
                       {decision ? (
                         <StatusBadge status={decision.review_decision} />
                       ) : (
@@ -226,7 +257,9 @@ export function ReviewRecords() {
                     Engine Flag Reason:
                   </strong>
                   <p style={{ color: 'var(--text-primary)', lineHeight: 1.5 }}>
-                    {emission.review_reason || 'Record requires auditor verification against operational source evidence.'}
+                    {item.anomaly?.is_anomaly === true && emission.status !== 'Needs Review'
+                      ? item.anomaly.message
+                      : emission.review_reason || 'Record requires verification against operational source evidence.'}
                   </p>
                 </div>
 

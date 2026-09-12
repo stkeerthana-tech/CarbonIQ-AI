@@ -156,3 +156,14 @@ def assign_role(user_id: int):
     user.role = role
     db.session.commit()
     return jsonify({"success": True, "data": user.to_dict()}), 200
+
+
+@auth_bp.route("/users", methods=["GET"])
+@jwt_required()
+def list_users():
+    """List users for administrators; roles are never publicly enumerable."""
+    actor = current_user()
+    if not actor or actor.role != "admin":
+        return jsonify({"success": False, "error": "Only administrators may list users."}), 403
+    users = User.query.order_by(User.created_at.desc()).all()
+    return jsonify({"success": True, "data": [user.to_dict() for user in users], "count": len(users)}), 200
