@@ -88,6 +88,7 @@ export function AddActivity() {
     setPreviewLoading(true);
     try {
       const payload = {
+        company_id: activeCompany?.id,
         activity,
         quantity: Number(quantity),
         unit,

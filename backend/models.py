@@ -16,6 +16,13 @@ from database import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
+user_company_assignments = db.Table(
+    "user_company_assignments",
+    db.Column("user_id", db.Integer, db.ForeignKey("users.id"), primary_key=True),
+    db.Column("company_id", db.Integer, db.ForeignKey("companies.id"), primary_key=True),
+)
+
+
 # ---------------------------------------------------------------------------
 # User
 # ---------------------------------------------------------------------------
@@ -33,6 +40,12 @@ class User(db.Model):
         default="company_user",
     )
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    companies = db.relationship(
+        "Company",
+        secondary=user_company_assignments,
+        back_populates="users",
+        lazy="selectin",
+    )
 
     def set_password(self, plain_text_password: str) -> None:
         """Hash and store a password.  Never stores plain text."""
@@ -67,6 +80,12 @@ class Company(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     activities = db.relationship("ActivityRecord", backref="company", lazy=True)
+    users = db.relationship(
+        "User",
+        secondary=user_company_assignments,
+        back_populates="companies",
+        lazy="selectin",
+    )
 
     def to_dict(self) -> dict:
         return {

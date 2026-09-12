@@ -19,11 +19,13 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 
 from database import db
 from models import User
+from authorization import current_user
 
 logger = logging.getLogger(__name__)
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
+PUBLIC_REGISTRATION_ROLE = "company_user"
 ALLOWED_ROLES = {"admin", "company_user", "auditor"}
 
 
@@ -42,7 +44,7 @@ def register():
     name = (data.get("name") or "").strip()
     email = (data.get("email") or "").strip().lower()
     password = data.get("password", "")
-    role = (data.get("role") or "company_user").strip().lower()
+    requested_role = (data.get("role") or PUBLIC_REGISTRATION_ROLE).strip().lower()
 
     if not name:
         return jsonify({"success": False, "error": "Field 'name' is required."}), 400
@@ -52,11 +54,11 @@ def register():
         return jsonify(
             {"success": False, "error": "Field 'password' must be at least 8 characters."}
         ), 400
-    if role not in ALLOWED_ROLES:
+    if requested_role != PUBLIC_REGISTRATION_ROLE:
         return jsonify(
             {
                 "success": False,
-                "error": f"Invalid role '{role}'. Allowed values: {sorted(ALLOWED_ROLES)}",
+                "error": "Public registration is only available for Company User accounts.",
             }
         ), 400
 
@@ -65,13 +67,13 @@ def register():
         return jsonify({"success": False, "error": "An account with this email already exists."}), 409
 
     # --- Create user ---
-    user = User(name=name, email=email, role=role)
+    user = User(name=name, email=email, role=PUBLIC_REGISTRATION_ROLE)
     user.set_password(password)       # hashes the password; never stored plain
 
     db.session.add(user)
     db.session.commit()
 
-    logger.info(f"New user registered: {email} (role={role})")
+    logger.info(f"New user registered: {email} (role={PUBLIC_REGISTRATION_ROLE})")
 
     return jsonify({"success": True, "data": user.to_dict()}), 201
 
@@ -130,4 +132,27 @@ def me():
     if not user:
         return jsonify({"success": False, "error": "User not found."}), 404
 
+    return jsonify({"success": True, "data": user.to_dict()}), 200
+
+
+@auth_bp.route("/users/<int:user_id>/role", methods=["POST"])
+@jwt_required()
+def assign_role(user_id: int):
+    """Assign a non-public role through an authenticated administrator."""
+    actor = current_user()
+    if not actor or actor.role != "admin":
+        return jsonify({"success": False, "error": "Only administrators may assign roles."}), 403
+
+    data = request.get_json(silent=True) or {}
+    role = (data.get("role") or "").strip().lower()
+    if role not in ALLOWED_ROLES:
+        return jsonify({"success": False, "error": "Invalid role."}), 400
+    if user_id == actor.id and role != "admin":
+        return jsonify({"success": False, "error": "Administrators cannot remove their own administrator role."}), 400
+
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({"success": False, "error": "User not found."}), 404
+    user.role = role
+    db.session.commit()
     return jsonify({"success": True, "data": user.to_dict()}), 200

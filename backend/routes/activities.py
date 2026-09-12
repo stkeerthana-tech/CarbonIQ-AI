@@ -22,6 +22,7 @@ from models import ActivityRecord, EmissionResult, AuditRecord
 from services.emission_calculator import calculate, build_audit_data
 from services.factor_service import get_all_activities
 from services.anomaly_service import detect_anomaly
+from authorization import accessible_company_ids, current_user, require_company_access
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,10 @@ def _validate_activity_input(data: dict) -> tuple[dict | None, str | None]:
 
     if not company_id:
         return None, "Field 'company_id' is required."
+    try:
+        company_id = int(company_id)
+    except (TypeError, ValueError):
+        return None, "Field 'company_id' must be a valid integer."
     if not activity:
         return None, "Field 'activity' is required."
     if quantity is None or quantity == "":
@@ -86,7 +91,7 @@ def _validate_activity_input(data: dict) -> tuple[dict | None, str | None]:
         )
 
     return {
-        "company_id": int(company_id),
+        "company_id": company_id,
         "activity": activity,
         "quantity": quantity,
         "unit": unit,
@@ -114,12 +119,19 @@ def create_activity():
     6. Save AuditRecord
     7. Return full result
     """
+    user = current_user()
+    if user.role not in ("admin", "company_user"):
+        return jsonify({"success": False, "error": "Auditors may review records but cannot submit activities."}), 403
+
     data = request.get_json(silent=True)
     clean, error = _validate_activity_input(data)
     if error:
         return jsonify({"success": False, "error": error}), 400
 
     company_id = clean["company_id"]
+    _, error = require_company_access(company_id)
+    if error:
+        return error
     activity = clean["activity"]
     quantity = clean["quantity"]
     unit = clean["unit"]
@@ -221,10 +233,20 @@ def create_activity():
 def list_activities():
     """List activity records.  Filter by ?company_id=<id> if provided."""
     company_id = request.args.get("company_id", type=int)
+    user_company_ids = accessible_company_ids(current_user())
+
+    if company_id is not None:
+        _, error = require_company_access(company_id)
+        if error:
+            return error
+    elif user_company_ids is not None and not user_company_ids:
+        return jsonify({"success": True, "data": [], "count": 0}), 200
 
     query = ActivityRecord.query
     if company_id:
         query = query.filter_by(company_id=company_id)
+    elif user_company_ids is not None:
+        query = query.filter(ActivityRecord.company_id.in_(user_company_ids))
 
     records = query.order_by(ActivityRecord.created_at.desc()).all()
 
@@ -249,6 +271,10 @@ def get_activity(activity_id: int):
     record = db.session.get(ActivityRecord, activity_id)
     if not record:
         return jsonify({"success": False, "error": f"Activity {activity_id} not found."}), 404
+
+    _, error = require_company_access(record.company_id)
+    if error:
+        return error
 
     data = record.to_dict()
 

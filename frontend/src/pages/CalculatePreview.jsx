@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useOutletContext } from 'react-router-dom';
 import { Calculator, AlertTriangle, ArrowRight, ShieldCheck, Info } from 'lucide-react';
 import api from '../services/api';
 import StatusBadge from '../components/StatusBadge';
@@ -14,6 +14,7 @@ const ACTIVITY_UNITS = {
 };
 
 export function CalculatePreview() {
+  const { activeCompany } = useOutletContext();
   const [supportedActivities, setSupportedActivities] = useState([
     'Grid electricity',
     'Diesel combustion',
@@ -63,6 +64,7 @@ export function CalculatePreview() {
     setLoading(true);
     try {
       const payload = {
+        company_id: activeCompany?.id,
         activity,
         quantity: Number(quantity),
         unit,

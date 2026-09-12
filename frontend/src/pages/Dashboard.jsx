@@ -126,7 +126,7 @@ export function Dashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem', marginBottom: '1.75rem' }}>
         <MetricCard
           title="Total Emissions"
-          value={dashboardData ? dashboardData.total_co2e_tonnes : 0}
+          value={dashboardData?.total_co2e_tonnes ?? null}
           unit="tCO2e"
           icon={Cloud}
           color="emerald"
@@ -135,7 +135,7 @@ export function Dashboard() {
 
         <MetricCard
           title="Scope 1"
-          value={dashboardData ? dashboardData.scope_1_tonnes : 0}
+          value={dashboardData?.scope_1_tonnes ?? null}
           unit="tCO2e"
           icon={Cloud}
           color="sky"
@@ -144,7 +144,7 @@ export function Dashboard() {
 
         <MetricCard
           title="Scope 2"
-          value={dashboardData ? dashboardData.scope_2_tonnes : 0}
+          value={dashboardData?.scope_2_tonnes ?? null}
           unit="tCO2e"
           icon={Cloud}
           color="indigo"
@@ -153,7 +153,7 @@ export function Dashboard() {
 
         <MetricCard
           title="Scope 3"
-          value={dashboardData ? dashboardData.scope_3_tonnes : 0}
+          value={dashboardData?.scope_3_tonnes ?? null}
           unit="tCO2e"
           icon={Cloud}
           color="purple"
@@ -165,7 +165,7 @@ export function Dashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '1.75rem' }}>
         <MetricCard
           title="Total Activities"
-          value={dashboardData ? dashboardData.activity_count : 0}
+          value={dashboardData?.activity_count ?? null}
           unit="records"
           icon={FileSpreadsheet}
           color="sky"
@@ -174,7 +174,7 @@ export function Dashboard() {
 
         <MetricCard
           title="Calculated Records"
-          value={dashboardData ? dashboardData.calculated_count : 0}
+          value={dashboardData?.calculated_count ?? null}
           unit="verified"
           icon={CheckCircle2}
           color="emerald"
@@ -183,7 +183,7 @@ export function Dashboard() {
 
         <MetricCard
           title="Needs Review"
-          value={dashboardData ? dashboardData.needs_review_count : 0}
+          value={dashboardData?.needs_review_count ?? null}
           unit="pending"
           icon={AlertTriangle}
           color="amber"
@@ -204,10 +204,10 @@ export function Dashboard() {
 
       {/* Scope Breakdown Visualizer */}
       <ScopeBreakdown
-        scope1={dashboardData?.scope_1_tonnes || 0}
-        scope2={dashboardData?.scope_2_tonnes || 0}
-        scope3={dashboardData?.scope_3_tonnes || 0}
-        total={dashboardData?.total_co2e_tonnes || 0}
+        scope1={dashboardData?.scope_1_tonnes ?? null}
+        scope2={dashboardData?.scope_2_tonnes ?? null}
+        scope3={dashboardData?.scope_3_tonnes ?? null}
+        total={dashboardData?.total_co2e_tonnes ?? null}
       />
 
       {/* Recent Activities Section */}

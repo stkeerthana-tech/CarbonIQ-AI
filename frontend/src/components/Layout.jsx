@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 export function Layout() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [companies, setCompanies] = useState([]);
   const [activeCompany, setActiveCompany] = useState(() => {
@@ -40,7 +40,7 @@ export function Layout() {
               setActiveCompany(res.data[0]);
             }
           }
-        } else {
+        } else if (user?.role === 'admin') {
           // If no company exists yet, create default organization
           const created = await api.companies.create({
             company_name: 'Carboniq Enterprise Ltd',
@@ -59,7 +59,7 @@ export function Layout() {
     }
 
     loadCompanies();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.role]);
 
   const handleSelectCompany = (company) => {
     setActiveCompany(company);

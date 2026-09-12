@@ -22,6 +22,7 @@ from flask_jwt_extended import jwt_required
 
 from services.emission_calculator import calculate
 from services.factor_service import get_all_activities
+from authorization import current_user, require_company_access
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +60,7 @@ def calculate_emission():
     unit = (data.get("unit") or "").strip()
     date_str = (data.get("date") or "").strip()
     scope_override = (data.get("scope_override") or "").strip() or None
+    company_id = data.get("company_id")
 
     # --- Validate ---
     if not activity:
@@ -83,6 +85,18 @@ def calculate_emission():
         return jsonify(
             {"success": False, "error": "Field 'date' is required (format: YYYY-MM-DD)."}
         ), 400
+
+    user = current_user()
+    if user.role != "admin":
+        if not company_id:
+            return jsonify({"success": False, "error": "Field 'company_id' is required."}), 400
+        try:
+            company_id = int(company_id)
+        except (TypeError, ValueError):
+            return jsonify({"success": False, "error": "Field 'company_id' must be a valid integer."}), 400
+        _, error = require_company_access(int(company_id))
+        if error:
+            return error
 
     # Validate date format
     try:

@@ -1,10 +1,14 @@
 import React from 'react';
 
 export function ScopeBreakdown({ scope1 = 0, scope2 = 0, scope3 = 0, total = 0 }) {
-  const hasData = total > 0;
+  const hasData = total !== null && total !== undefined;
+  const numericTotal = Number(total) || 0;
+  const numericScope1 = Number(scope1) || 0;
+  const numericScope2 = Number(scope2) || 0;
+  const numericScope3 = Number(scope3) || 0;
 
-  const p1 = hasData ? Math.round((scope1 / total) * 100) : 0;
-  const p2 = hasData ? Math.round((scope2 / total) * 100) : 0;
+  const p1 = numericTotal > 0 ? Math.round((numericScope1 / numericTotal) * 100) : 0;
+  const p2 = numericTotal > 0 ? Math.round((numericScope2 / numericTotal) * 100) : 0;
   const p3 = hasData ? Math.max(0, 100 - p1 - p2) : 0;
 
   return (
@@ -19,7 +23,7 @@ export function ScopeBreakdown({ scope1 = 0, scope2 = 0, scope3 = 0, total = 0 }
         <div style={{ textAlign: 'right' }}>
           <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Total Verified</span>
           <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--primary)' }}>
-            {hasData ? `${total.toLocaleString()} tCO2e` : '0.00 tCO2e'}
+            {hasData ? `${numericTotal.toLocaleString()} tCO2e` : '—'}
           </div>
         </div>
       </div>

@@ -15,6 +15,7 @@ from sqlalchemy import func
 
 from database import db
 from models import ActivityRecord, EmissionResult, Company
+from authorization import require_company_access
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,9 @@ def get_dashboard(company_id: int):
       - Scope matching uses a LIKE query to handle "Scope 1 or Scope 3"
         edge cases in the database.
     """
+    _, error = require_company_access(company_id)
+    if error:
+        return error
     company = db.session.get(Company, company_id)
     if not company:
         return jsonify(
