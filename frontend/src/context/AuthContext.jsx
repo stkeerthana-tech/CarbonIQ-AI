@@ -12,7 +12,13 @@ export function AuthProvider({ children }) {
       return null;
     }
   });
-  const [token, setToken] = useState(() => localStorage.getItem('carboniq_token') || null);
+  const [token, setToken] = useState(() => {
+    try {
+      return localStorage.getItem('carboniq_token') || null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
 
   // Sync / verify user session with backend
@@ -28,11 +34,17 @@ export function AuthProvider({ children }) {
           setUser(response.data);
           localStorage.setItem('carboniq_user', JSON.stringify(response.data));
         } else {
+          try {
+            sessionStorage.setItem('carboniq_session_expired', 'Your session has expired. Please log in again.');
+          } catch (e) {}
           logout();
         }
       } catch (err) {
-        // If 401 or token invalid, clear session
-        if (err.status === 401) {
+        // If 401, 422, or token invalid, clear session
+        if (err.status === 401 || err.status === 422) {
+          try {
+            sessionStorage.setItem('carboniq_session_expired', 'Your session has expired. Please log in again.');
+          } catch (e) {}
           logout();
         }
       } finally {
@@ -51,6 +63,9 @@ export function AuthProvider({ children }) {
   }, [token]);
 
   const login = async (email, password) => {
+    try {
+      sessionStorage.removeItem('carboniq_session_expired');
+    } catch (e) {}
     const response = await api.auth.login({ email, password });
     if (response.success && response.data) {
       const { access_token, user: userData } = response.data;
@@ -60,7 +75,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem('carboniq_user', JSON.stringify(userData));
       return { success: true };
     }
-    return { success: false, error: response.error || 'Authentication failed' };
+    return { success: false, error: response.error || response.msg || 'Authentication failed' };
   };
 
   const register = async (name, email, password, role) => {
@@ -69,14 +84,16 @@ export function AuthProvider({ children }) {
       // Automatically log in after registration
       return login(email, password);
     }
-    return { success: false, error: response.error || 'Registration failed' };
+    return { success: false, error: response.error || response.msg || 'Registration failed' };
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem('carboniq_token');
-    localStorage.removeItem('carboniq_user');
+    try {
+      localStorage.removeItem('carboniq_token');
+      localStorage.removeItem('carboniq_user');
+    } catch (e) {}
   };
 
   const value = {

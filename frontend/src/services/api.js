@@ -4,7 +4,7 @@
  * Never connects directly to SQLite or CSV.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) || '/api';
 
 /**
  * Helper to retrieve stored auth token
@@ -39,14 +39,22 @@ async function request(endpoint, options = {}) {
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      // Automatic 401 Unauthorized handling
-      if (response.status === 401 && !endpoint.includes('/auth/login')) {
-        localStorage.removeItem('carboniq_token');
-        localStorage.removeItem('carboniq_user');
-        window.dispatchEvent(new CustomEvent('carboniq-auth-expired'));
+      // Automatic 401 Unauthorized / Expired session handling
+      const isAuthError = response.status === 401 || (response.status === 422 && typeof data?.msg === 'string' && data.msg.toLowerCase().includes('token'));
+      if (isAuthError && !endpoint.includes('/auth/login')) {
+        try {
+          localStorage.removeItem('carboniq_token');
+          localStorage.removeItem('carboniq_user');
+          sessionStorage.setItem('carboniq_session_expired', 'Your session has expired. Please log in again.');
+        } catch (e) {}
+        window.dispatchEvent(
+          new CustomEvent('carboniq-auth-expired', {
+            detail: { message: 'Your session has expired. Please log in again.' },
+          })
+        );
       }
 
-      const errorMessage = data?.error || data?.message || `Request failed with status ${response.status}`;
+      const errorMessage = data?.error || data?.message || data?.msg || `Request failed with status ${response.status}`;
       const error = new Error(errorMessage);
       error.status = response.status;
       error.data = data;

@@ -49,6 +49,10 @@ export function Dashboard() {
         setAnomalyCount(flagged);
       }
     } catch (err) {
+      if (err.status === 401) {
+        // Handled globally by 401 auth expiration handler
+        return;
+      }
       setError(err.message || 'Unable to load dashboard data.');
     } finally {
       setLoading(false);
@@ -193,7 +197,7 @@ export function Dashboard() {
 
         <MetricCard
           title="Anomalies / Flagged"
-          value={anomalyCount}
+          value={dashboardData ? anomalyCount : null}
           unit="flagged"
           icon={AlertOctagon}
           color="rose"

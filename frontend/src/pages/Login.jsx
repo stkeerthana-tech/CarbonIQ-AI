@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Leaf, Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Eye, EyeOff, Leaf, Lock, Mail, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -12,10 +13,31 @@ export function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sessionMessage, setSessionMessage] = useState(() => {
+    const fromState = location.state?.message || (location.state?.sessionExpired ? 'Your session has expired. Please log in again.' : null);
+    if (fromState) return fromState;
+    try {
+      const stored = sessionStorage.getItem('carboniq_session_expired');
+      if (stored) {
+        sessionStorage.removeItem('carboniq_session_expired');
+        return stored;
+      }
+    } catch (e) {}
+    return null;
+  });
+
+  useEffect(() => {
+    const handleAuthExpired = (e) => {
+      setSessionMessage(e.detail?.message || 'Your session has expired. Please log in again.');
+    };
+    window.addEventListener('carboniq-auth-expired', handleAuthExpired);
+    return () => window.removeEventListener('carboniq-auth-expired', handleAuthExpired);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSessionMessage(null);
 
     if (!email.trim() || !password) {
       setError('Please enter both email and password.');
@@ -83,6 +105,28 @@ export function Login() {
             Verified carbon intelligence, backed by evidence.
           </p>
         </div>
+
+        {/* Session Expired Alert */}
+        {sessionMessage && (
+          <div
+            role="alert"
+            style={{
+              padding: '0.75rem 1rem',
+              borderRadius: 'var(--radius-md)',
+              background: 'rgba(245, 158, 11, 0.12)',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              color: '#fbbf24',
+              fontSize: '0.85rem',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}
+          >
+            <AlertCircle size={16} />
+            <span>{sessionMessage}</span>
+          </div>
+        )}
 
         {/* Error Alert */}
         {error && (
