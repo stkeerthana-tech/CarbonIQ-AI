@@ -9,7 +9,7 @@ Business activities → emission factor lookup → verified CO2e calculation →
 
 Carboniq AI accepts business activity data, retrieves a verified emission factor from a CSV knowledge base, performs a **deterministic numerical calculation** in Python, and returns the CO2e result with a complete audit trail.
 
-An AI/LLM layer (future Lyzr integration) handles **understanding, classification, and explanation** only.  
+The Lyzr AI layer handles **review, explanation, and recommendations** only.
 The **backend always performs the final numbers** — the LLM is never permitted to invent or substitute an emission factor.
 
 ---
@@ -20,7 +20,7 @@ The **backend always performs the final numbers** — the LLM is never permitted
 User / Frontend
        │
        ▼
-  Lyzr AI Agent  (future – classify, explain, route)
+  Lyzr AI Agent  (review and explain verified context)
        │
        ▼
   Flask Backend  ◄──── emission_factors.csv (source of truth)
@@ -141,11 +141,13 @@ User / Frontend
 |--------|------------------------------|------|-------------------------|
 | GET    | /api/dashboard/\<company_id\>| JWT  | Company-level totals    |
 
-### Utility
+### Companies and AI
 | Method | Endpoint                    | Auth | Description             |
 |--------|-----------------------------|------|-------------------------|
 | GET    | /api/health                 | No   | Health check            |
 | GET    | /api/activities/supported   | No   | Supported activity list |
+| GET    | /api/companies              | JWT  | List authorized companies|
+| POST   | /api/ai/insights            | JWT  | Lyzr review of verified data |
 
 ---
 
@@ -194,17 +196,28 @@ The React frontend starts on `http://localhost:3000`.
 
 ---
 
+## Live Demo
+
+- Live application URL: deployment URL to be provided
+- Demo role: Company User
+- Demo email: `george@gmail.com`
+- Demo password: not included in the repository; provide it securely to evaluators
+
+Demo access is provided through a dedicated Company User account for evaluation. The account is restricted to the demo organization and does not have administrator privileges. Administrative functions such as user management, organization management, and role assignment remain restricted to administrators.
+
+---
+
 ## 8. Environment Variables
 
 | Variable              | Required | Default                   | Description                      |
 |-----------------------|----------|---------------------------|----------------------------------|
-| SECRET_KEY            | Yes      | dev-secret-change-this    | Flask session secret             |
-| JWT_SECRET_KEY        | Yes      | dev-jwt-change-this       | JWT signing key                  |
+| SECRET_KEY            | Yes      | (set in environment)      | Flask session secret             |
+| JWT_SECRET_KEY        | Yes      | (set in environment)      | JWT signing key                  |
 | DATABASE_URI          | No       | sqlite:///carboniq.db     | SQLAlchemy database URI          |
 | EMISSION_FACTORS_CSV  | No       | data/emission_factors.csv | Path to emission factors CSV     |
 | FLASK_DEBUG           | No       | 1                         | Enable debug mode (set 0 in prod)|
-| LYZR_API_KEY          | No       | (blank)                   | Future Lyzr AI integration       |
-| LYZR_AGENT_ID         | No       | (blank)                   | Future Lyzr AI integration       |
+| LYZR_API_KEY          | No       | (blank)                   | Backend-only Lyzr API key        |
+| LYZR_AGENT_ID         | No       | (blank)                   | Backend-only Lyzr agent ID       |
 
 ---
 
@@ -294,17 +307,20 @@ This trail is immutable once written and can be retrieved via `GET /api/activiti
 
 ---
 
-## 13. AI + Deterministic Calculation Architecture
+## 13. Workflow and AI Architecture
+
+Company Users can enter and save activities for their assigned company, preview deterministic emissions, review Scope classification and Needs Review results, inspect anomaly flags, view Activity History and Audit Trail, and request a Lyzr AI carbon review. Auditors retain read-only access, while administrative operations remain restricted to administrators. Company-level RBAC isolates each non-admin user to explicitly assigned companies.
+
+The deterministic backend is authoritative for emission factors, carbon calculations, database records, authorization, and audit records. Lyzr receives verified backend context to explain findings and provide recommendations; it does not replace calculations or invent missing emission factors.
 
 ```
 User Input
     │
     ▼
-[Future Lyzr AI Agent]
-  • Understand natural language
-  • Classify activity type
-  • Explain the result in plain language
-  • Route to the correct backend endpoint
+[Lyzr AI Agent]
+  • Review verified backend context
+  • Explain findings in plain language
+  • Provide recommendations
     │
     ▼
 [Flask Backend – this repo]
@@ -312,10 +328,11 @@ User Input
   • Look up emission factor from CSV
   • Perform deterministic calculation
   • Write audit record
+  • Enforce company-level authorization
   • Return structured JSON
     │
     ▼
-[LLM may summarise the JSON response for the user]
+[Lyzr may explain the verified response for the user]
   • Must NOT modify co2e_kg or co2e_tonnes
   • Must NOT substitute an emission factor
 ```
@@ -330,24 +347,10 @@ The clean service boundary is `POST /api/emissions/calculate`.
 - Anomaly detection uses a simple ratio method; a Z-score or IQR approach is better with more data.
 - The emission factor database currently covers 6 activities and is India-region focused.
 - Grid electricity and domestic air travel factors are CO2-only; they will always return "Needs Review" until CO2e factors are added to the CSV.
-- No multi-tenancy isolation; all authenticated users can query all companies.
+- Company-level isolation is enforced through explicit user-company assignments; administrators have global company access.
 - This project does not claim compliance with CSRD, SEC, or any other regulation.
 
 ---
-
-## 15. Future Lyzr Integration
-
-To connect a Lyzr AI agent:
-
-1. Set `LYZR_API_KEY` and `LYZR_AGENT_ID` in `backend/.env`.
-2. Create `agents/lyzr_agent.py` that calls the Lyzr SDK.
-3. The agent should:
-   - Accept user natural language input
-   - Classify the activity and extract quantity/unit/date
-   - Call `POST /api/emissions/calculate` or `POST /api/activities`
-   - Return the backend's JSON response (unmodified numbers) to the user
-   - Optionally add a plain-language explanation around the result
-4. The agent must **never** modify `co2e_kg`, `co2e_tonnes`, or `emission_factor` fields.
 
 ---
 

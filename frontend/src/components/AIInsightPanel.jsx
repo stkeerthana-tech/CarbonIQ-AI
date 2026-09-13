@@ -2,6 +2,93 @@ import React, { useState } from 'react';
 import { Sparkles, RefreshCw, AlertTriangle, Bot, Lock } from 'lucide-react';
 import api from '../services/api';
 
+const INSIGHT_SECTIONS = [
+  { title: 'Review Status', keys: ['status', 'review_status'] },
+  { title: 'Emissions Summary', keys: ['emissions_summary', 'emission_summary', 'total_emissions'] },
+  { title: 'Scope Analysis', keys: ['scope_analysis', 'scope_distribution', 'scopes'] },
+  { title: 'Data Quality', keys: ['data_quality', 'quality_assessment'] },
+  { title: 'Key Findings', keys: ['key_findings', 'findings'] },
+  { title: 'Highest-Emission Activities', keys: ['highest_emission_activities', 'highest_emitting_activities'] },
+  { title: 'Review / Compliance Concerns', keys: ['compliance_concerns', 'review_concerns', 'concerns', 'red_flags'] },
+  { title: 'Evidence', keys: ['evidence', 'evidence_summary'] },
+  { title: 'Recommendations', keys: ['recommendations', 'reduction_recommendations'] },
+];
+
+function parseInsight(value) {
+  if (value && typeof value === 'object') return value;
+  if (typeof value !== 'string') return null;
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function humanizeKey(key) {
+  return key
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function InsightValue({ value }) {
+  if (Array.isArray(value)) {
+    return (
+      <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
+        {value.map((item, index) => (
+          <li key={index} style={{ marginBottom: '0.35rem' }}>
+            <InsightValue value={item} />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  if (value && typeof value === 'object') {
+    return (
+      <div style={{ display: 'grid', gap: '0.45rem' }}>
+        {Object.entries(value).map(([key, item]) => (
+          <div key={key}>
+            <strong>{humanizeKey(key)}:</strong>{' '}
+            <InsightValue value={item} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return <>{String(value ?? '')}</>;
+}
+
+function StructuredInsight({ insight }) {
+  const usedKeys = new Set();
+  const sections = INSIGHT_SECTIONS.flatMap(({ title, keys }) => {
+    const key = keys.find((candidate) => Object.prototype.hasOwnProperty.call(insight, candidate));
+    if (!key || insight[key] === null || insight[key] === '') return [];
+    usedKeys.add(key);
+    return [{ title, value: insight[key] }];
+  });
+
+  const additional = Object.entries(insight).filter(([key, value]) => (
+    !usedKeys.has(key) && value !== null && value !== ''
+  ));
+  if (additional.length > 0) sections.push({ title: 'Additional Details', value: Object.fromEntries(additional) });
+
+  return (
+    <div style={{ display: 'grid', gap: '1rem' }}>
+      {sections.map(({ title, value }) => (
+        <section key={title}>
+          <h4 style={{ margin: '0 0 0.35rem', color: 'var(--primary)', fontSize: '0.85rem', textTransform: 'uppercase' }}>
+            {title}
+          </h4>
+          <div><InsightValue value={value} /></div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
 /**
  * AIInsightPanel
  * --------------
@@ -19,6 +106,7 @@ export function AIInsightPanel({ companyId, dashboardData }) {
   const [error, setError]   = useState('');
   const [enabled, setEnabled] = useState(true);
   const [generated, setGenerated] = useState(false);
+  const parsedInsight = parseInsight(insight);
 
   const handleGenerate = async () => {
     if (!companyId || !dashboardData) return;
@@ -266,7 +354,9 @@ export function AIInsightPanel({ companyId, dashboardData }) {
       {/* AI response */}
       {!loading && !error && generated && enabled && insight && (
         <>
-          <div style={insightBoxStyle}>{insight}</div>
+          <div style={insightBoxStyle}>
+            {parsedInsight ? <StructuredInsight insight={parsedInsight} /> : insight}
+          </div>
           <div style={disclaimerStyle}>
             <Lock size={11} />
             All emission figures are sourced from the verified backend calculation engine. The AI provides

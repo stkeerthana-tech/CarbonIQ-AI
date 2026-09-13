@@ -9,6 +9,7 @@ export function Layout() {
   const { isAuthenticated, loading, user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [companies, setCompanies] = useState([]);
+  const [companyContextLoading, setCompanyContextLoading] = useState(true);
   const [activeCompany, setActiveCompany] = useState(() => {
     try {
       const saved = localStorage.getItem('carboniq_active_company');
@@ -24,6 +25,7 @@ export function Layout() {
   useEffect(() => {
     if (!isAuthenticated) {
       fetchedUserRef.current = null;
+      setCompanyContextLoading(false);
       return;
     }
 
@@ -32,6 +34,7 @@ export function Layout() {
     }
 
     let isMounted = true;
+    setCompanyContextLoading(true);
     async function loadCompanies() {
       try {
         const res = await api.companies.list();
@@ -68,6 +71,8 @@ export function Layout() {
         }
       } catch (err) {
         console.error('Failed to load companies:', err);
+      } finally {
+        if (isMounted) setCompanyContextLoading(false);
       }
     }
 
@@ -83,7 +88,7 @@ export function Layout() {
     window.dispatchEvent(new CustomEvent('carboniq-company-changed', { detail: company }));
   };
 
-  if (loading) {
+  if (loading || companyContextLoading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main)' }}>
         <div style={{ textAlign: 'center' }}>
