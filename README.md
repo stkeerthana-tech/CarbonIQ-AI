@@ -201,7 +201,8 @@ The React frontend starts on `http://localhost:3000`.
 - Live application URL: deployment URL to be provided
 - Demo role: Company User
 - Demo email: `george@gmail.com`
-- Demo password: not included in the repository; provide it securely to evaluators
+- Demo password: CarbonIQ@Demo2026!
+- Please provide these credentials securely to evaluators.
 
 Demo access is provided through a dedicated Company User account for evaluation. The account is restricted to the demo organization and does not have administrator privileges. Administrative functions such as user management, organization management, and role assignment remain restricted to administrators.
 
