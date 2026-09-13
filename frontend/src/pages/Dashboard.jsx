@@ -16,6 +16,7 @@ import api from '../services/api';
 import MetricCard from '../components/MetricCard';
 import ScopeBreakdown from '../components/ScopeBreakdown';
 import StatusBadge from '../components/StatusBadge';
+import AIInsightPanel from '../components/AIInsightPanel';
 
 export function Dashboard() {
   const { activeCompany } = useOutletContext();
@@ -26,7 +27,11 @@ export function Dashboard() {
   const [error, setError] = useState('');
 
   const fetchDashboard = async () => {
-    if (!activeCompany?.id) return;
+    if (!activeCompany?.id) {
+      setLoading(false);
+      setDashboardData(null);
+      return;
+    }
     setLoading(true);
     setError('');
 
@@ -61,19 +66,25 @@ export function Dashboard() {
 
   useEffect(() => {
     fetchDashboard();
-
-    const handleCompanyChange = () => {
-      fetchDashboard();
-    };
-    window.addEventListener('carboniq-company-changed', handleCompanyChange);
-    return () => window.removeEventListener('carboniq-company-changed', handleCompanyChange);
   }, [activeCompany?.id]);
 
-  if (loading && !dashboardData) {
+  if (loading && !dashboardData && activeCompany?.id) {
     return (
       <div style={{ padding: '4rem 1rem', textAlign: 'center' }}>
         <div className="spinner" style={{ width: '40px', height: '40px', border: '3px solid var(--border-subtle)', borderTopColor: 'var(--primary)', borderRadius: '50%', margin: '0 auto 1rem' }} />
         <h3 style={{ fontSize: '1.1rem', color: 'var(--text-secondary)' }}>Loading verified carbon intelligence...</h3>
+      </div>
+    );
+  }
+
+  if (!activeCompany?.id) {
+    return (
+      <div className="glass-panel" style={{ padding: '3rem 1.5rem', textAlign: 'center', margin: '2rem auto', maxWidth: '600px' }}>
+        <Cloud size={40} style={{ margin: '0 auto 1rem', opacity: 0.6, color: 'var(--text-muted)' }} />
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>No Organization Selected</h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+          Please select or assign an organization to view verified emissions metrics.
+        </p>
       </div>
     );
   }
@@ -307,6 +318,12 @@ export function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* AI Carbon Intelligence Panel */}
+      <AIInsightPanel
+        companyId={activeCompany?.id}
+        dashboardData={dashboardData}
+      />
     </div>
   );
 }

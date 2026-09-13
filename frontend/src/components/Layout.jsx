@@ -18,40 +18,53 @@ export function Layout() {
     }
   });
 
+  const fetchedUserRef = React.useRef(null);
+
   // Load companies
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      fetchedUserRef.current = null;
+      return;
+    }
 
+    if (fetchedUserRef.current === user?.id && companies.length > 0) {
+      return;
+    }
+
+    let isMounted = true;
     async function loadCompanies() {
       try {
         const res = await api.companies.list();
-        if (res.success && res.data && res.data.length > 0) {
+        if (!isMounted) return;
+
+        if (res.success && Array.isArray(res.data) && res.data.length > 0) {
           setCompanies(res.data);
-          // Set initial active company if none selected
-          if (!activeCompany) {
-            setActiveCompany(res.data[0]);
-            localStorage.setItem('carboniq_active_company', JSON.stringify(res.data[0]));
-          } else {
-            // Re-verify current active company exists in list
-            const found = res.data.find((c) => c.id === activeCompany.id);
-            if (found) {
-              setActiveCompany(found);
-            } else {
-              setActiveCompany(res.data[0]);
-            }
-          }
+          fetchedUserRef.current = user?.id;
+
+          // Re-verify current active company exists in authorized companies list
+          const found = activeCompany ? res.data.find((c) => String(c.id) === String(activeCompany.id)) : null;
+          const targetCompany = found || res.data[0];
+
+          setActiveCompany(targetCompany);
+          localStorage.setItem('carboniq_active_company', JSON.stringify(targetCompany));
         } else if (user?.role === 'admin') {
-          // If no company exists yet, create default organization
+          // If no company exists yet, create default organization for admin
           const created = await api.companies.create({
             company_name: 'Carboniq Enterprise Ltd',
             industry: 'Technology & Logistics',
             location: 'India',
           });
-          if (created.success && created.data) {
+          if (created.success && created.data && isMounted) {
             setCompanies([created.data]);
             setActiveCompany(created.data);
             localStorage.setItem('carboniq_active_company', JSON.stringify(created.data));
+            fetchedUserRef.current = user?.id;
           }
+        } else {
+          setCompanies([]);
+          setActiveCompany(null);
+          localStorage.removeItem('carboniq_active_company');
+          fetchedUserRef.current = user?.id;
         }
       } catch (err) {
         console.error('Failed to load companies:', err);
@@ -59,12 +72,14 @@ export function Layout() {
     }
 
     loadCompanies();
-  }, [isAuthenticated, user?.role]);
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, user?.id]);
 
   const handleSelectCompany = (company) => {
     setActiveCompany(company);
     localStorage.setItem('carboniq_active_company', JSON.stringify(company));
-    // Trigger window event so child pages can refetch company-specific data
     window.dispatchEvent(new CustomEvent('carboniq-company-changed', { detail: company }));
   };
 

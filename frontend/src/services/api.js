@@ -131,6 +131,15 @@ export const api = {
   health: {
     check: () => request('/health'),
   },
+
+  // AI Insights (Lyzr agent — reasoning only, never recalculates numbers)
+  ai: {
+    getInsight: (companyId, context) =>
+      request('/ai/insights', {
+        method: 'POST',
+        body: JSON.stringify({ company_id: companyId, context }),
+      }),
+  },
 };
 
 export default api;

@@ -62,9 +62,15 @@ def create_app() -> Flask:
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-this")
     app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "dev-jwt-change-this")
 
-    # SQLite database stored inside backend/
+    # Resolve relative SQLite paths from the backend directory, not Flask's
+    # instance directory or whichever directory launched the process.
     default_db = f"sqlite:///{os.path.join(_HERE, 'carboniq.db')}"
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URI", default_db)
+    database_uri = os.environ.get("DATABASE_URI", default_db)
+    if database_uri.startswith("sqlite:///") and not database_uri.startswith("sqlite:////"):
+        database_path = database_uri[len("sqlite:///"):]
+        if not os.path.isabs(database_path):
+            database_uri = f"sqlite:///{os.path.abspath(os.path.join(_HERE, database_path))}"
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     if app.config["SECRET_KEY"].startswith("dev-"):
@@ -93,12 +99,14 @@ def create_app() -> Flask:
     from routes.emissions import emissions_bp
     from routes.dashboard import dashboard_bp
     from routes.companies import companies_bp
+    from routes.ai_insights import ai_insights_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(activities_bp)
     app.register_blueprint(emissions_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(companies_bp)
+    app.register_blueprint(ai_insights_bp)
 
     # -----------------------------------------------------------------------
     # Health check

@@ -93,6 +93,7 @@ export function AuthProvider({ children }) {
     try {
       localStorage.removeItem('carboniq_token');
       localStorage.removeItem('carboniq_user');
+      localStorage.removeItem('carboniq_active_company');
     } catch (e) {}
   };
 
