@@ -12,7 +12,7 @@ All write endpoints require JWT authentication.
 
 import json
 import logging
-from datetime import date as date_type
+from datetime import date as date_type, datetime, timezone
 
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
@@ -130,8 +130,8 @@ def create_activity():
     7. Return full result
     """
     user = current_user()
-    if user.role not in ("admin", "company_user"):
-        return jsonify({"success": False, "error": "Auditors may review records but cannot submit activities."}), 403
+    if user.role not in ("admin", "auditor"):
+        return jsonify({"success": False, "error": "Company users may not submit activity records directly. Please contact an auditor."}), 403
 
     data = request.get_json(silent=True)
     clean, error = _validate_activity_input(data)
@@ -294,5 +294,124 @@ def get_activity(activity_id: int):
         data["emission"] = record.emission_result.to_dict()
         if record.emission_result.audit_record:
             data["audit"] = record.emission_result.audit_record.to_dict()
+        if record.emission_result.audit_records:
+            data["audit_trail"] = [ar.to_dict() for ar in record.emission_result.audit_records]
 
     return jsonify({"success": True, "data": data}), 200
+
+
+# ---------------------------------------------------------------------------
+# POST /api/activities/<id>/resolve
+# ---------------------------------------------------------------------------
+
+@activities_bp.route("/<int:activity_id>/resolve", methods=["POST"])
+@jwt_required()
+def resolve_activity(activity_id: int):
+    """
+    Resolve an activity review record (Auditor / Admin only).
+
+    Persists the auditor decision and justification notes into an immutable AuditRecord event
+    without overwriting the original deterministic emission calculation.
+    """
+    user = current_user()
+    if not user or user.role not in ("admin", "auditor"):
+        return jsonify({
+            "success": False,
+            "error": "Only authorized auditors and administrators may resolve activity reviews.",
+        }), 403
+
+    activity = db.session.get(ActivityRecord, activity_id)
+    if not activity:
+        return jsonify({"success": False, "error": f"Activity {activity_id} not found."}), 404
+
+    _, error = require_company_access(activity.company_id)
+    if error:
+        return error
+
+    emission = activity.emission_result
+    if not emission:
+        return jsonify({"success": False, "error": "No emission calculation result found for this activity."}), 400
+
+    data = request.get_json(silent=True) or {}
+    decision = (data.get("decision") or "").strip()
+    resolution_notes = (data.get("resolution_notes") or "").strip()
+
+    ALLOWED_DECISIONS = {"Reviewed - Valid", "Reviewed - Issue"}
+    if decision not in ALLOWED_DECISIONS:
+        return jsonify({
+            "success": False,
+            "error": f"Invalid decision '{decision}'. Allowed decisions: {sorted(list(ALLOWED_DECISIONS))}",
+        }), 400
+
+    if not resolution_notes:
+        return jsonify({
+            "success": False,
+            "error": "Field 'resolution_notes' is required and cannot be empty.",
+        }), 400
+
+    if len(resolution_notes) > 2000:
+        return jsonify({
+            "success": False,
+            "error": "Resolution notes cannot exceed 2000 characters.",
+        }), 400
+
+    # Build resolution audit payload
+    original_status = emission.status
+    original_review_reason = emission.review_reason or ""
+
+    resolution_data = {
+        "event": "review_resolution",
+        "activity_id": activity.id,
+        "company_id": activity.company_id,
+        "activity": activity.activity,
+        "quantity": activity.quantity,
+        "unit": activity.unit,
+        "date": activity.date.isoformat() if activity.date else None,
+        "decision": decision,
+        "resolution_notes": resolution_notes,
+        "reviewer_id": user.id,
+        "reviewer_name": user.name,
+        "reviewer_email": user.email,
+        "reviewer_role": user.role,
+        "original_status": original_status,
+        "original_review_reason": original_review_reason,
+        "resolved_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    # Update emission status to reflect verified/issue decision
+    emission.status = decision
+
+    # Retrieve initial factor value if present
+    initial_factor_value = None
+    if emission.audit_record:
+        initial_factor_value = emission.audit_record.factor_value
+
+    # Append immutable resolution AuditRecord
+    resolution_audit_record = AuditRecord(
+        emission_id=emission.id,
+        activity_data=json.dumps(resolution_data, indent=2),
+        factor_id=emission.factor_id,
+        factor_value=initial_factor_value,
+        calculation=emission.calculation,
+        source=emission.source,
+        methodology=emission.methodology,
+        status=decision,
+        review_reason=resolution_notes,
+        timestamp=datetime.now(timezone.utc),
+    )
+    db.session.add(resolution_audit_record)
+    db.session.commit()
+
+    logger.info(
+        f"Activity {activity_id} resolved by user {user.id} ({user.role}): "
+        f"decision='{decision}'"
+    )
+
+    response_data = {
+        "activity": activity.to_dict(),
+        "emission": emission.to_dict(),
+        "resolution": resolution_audit_record.to_dict(),
+        "resolution_event": resolution_data,
+    }
+
+    return jsonify({"success": True, "data": response_data}), 200

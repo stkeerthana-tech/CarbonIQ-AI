@@ -10,18 +10,24 @@ import {
   Calculator,
   RefreshCw,
   ArrowRight,
-  Clock
+  Clock,
+  Sparkles,
+  ShieldCheck,
+  Building2
 } from 'lucide-react';
 import api from '../services/api';
 import MetricCard from '../components/MetricCard';
 import ScopeBreakdown from '../components/ScopeBreakdown';
 import StatusBadge from '../components/StatusBadge';
 import AIInsightPanel from '../components/AIInsightPanel';
+import { useAuth } from '../context/AuthContext';
 
 export function Dashboard() {
   const { activeCompany } = useOutletContext();
+  const { user } = useAuth();
   const [dashboardData, setDashboardData] = useState(null);
   const [recentActivities, setRecentActivities] = useState([]);
+  const [flaggedItems, setFlaggedItems] = useState([]);
   const [anomalyCount, setAnomalyCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -49,9 +55,10 @@ export function Dashboard() {
 
         // Count flagged/anomalies (if activity quantity is anomalous or status is flagged)
         const flagged = actRes.data.filter(
-          (a) => a.emission?.status === 'Needs Review' || a.emission?.status?.includes('Flagged')
-        ).length;
-        setAnomalyCount(flagged);
+          (a) => a.emission?.status === 'Needs Review' || a.anomaly?.is_anomaly === true
+        );
+        setFlaggedItems(flagged);
+        setAnomalyCount(flagged.length);
       }
     } catch (err) {
       if (err.status === 401) {
@@ -89,12 +96,14 @@ export function Dashboard() {
     );
   }
 
+  const isAuditorOrAdmin = user?.role === 'admin' || user?.role === 'auditor';
+
   return (
     <div className="animate-fade-in">
       {/* Header Bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
         <div>
-          <h1 style={{ fontSize: '1.85rem', marginBottom: '0.35rem' }}>Carbon Intelligence Dashboard</h1>
+          <h1 style={{ fontSize: '1.85rem', marginBottom: '0.35rem', letterSpacing: '-0.02em' }}>Carbon Intelligence Dashboard</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             Verified emissions portfolio for <strong style={{ color: 'var(--text-primary)' }}>{activeCompany?.company_name || 'Organization'}</strong>
           </p>
@@ -110,10 +119,19 @@ export function Dashboard() {
             <RefreshCw size={15} className={loading ? 'spinner' : ''} />
             <span>Refresh</span>
           </button>
-          <Link to="/activities/new" className="btn btn-primary">
-            <PlusCircle size={16} />
-            <span>Add Activity</span>
-          </Link>
+
+          {/* Role-based action button: Add Activity only for Auditor / Admin */}
+          {isAuditorOrAdmin ? (
+            <Link to="/activities/new" className="btn btn-primary">
+              <PlusCircle size={16} />
+              <span>Add Activity</span>
+            </Link>
+          ) : (
+            <Link to="/emissions/calculate" className="btn btn-primary">
+              <Calculator size={16} />
+              <span>Calculate / Preview</span>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -122,10 +140,10 @@ export function Dashboard() {
           role="alert"
           style={{
             padding: '1rem',
-            background: 'rgba(239, 68, 68, 0.12)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
+            background: 'var(--status-flagged-bg)',
+            border: '1px solid var(--status-flagged-border)',
             borderRadius: 'var(--radius-md)',
-            color: '#f87171',
+            color: 'var(--status-flagged-color)',
             marginBottom: '1.5rem',
             display: 'flex',
             alignItems: 'center',
@@ -224,6 +242,78 @@ export function Dashboard() {
         scope3={dashboardData?.scope_3_tonnes ?? null}
         total={dashboardData?.total_co2e_tonnes ?? null}
       />
+
+      {/* Review & Attention Items Section */}
+      {anomalyCount > 0 && (
+        <div
+          className="glass-panel"
+          style={{
+            padding: '1.5rem',
+            marginBottom: '1.75rem',
+            border: '1px solid var(--status-review-border)',
+            background: 'linear-gradient(135deg, var(--status-review-bg) 0%, var(--bg-card) 100%)',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <div
+                style={{
+                  width: '34px',
+                  height: '34px',
+                  borderRadius: '8px',
+                  background: 'var(--status-review-bg)',
+                  color: 'var(--status-review-color)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <AlertOctagon size={18} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.05rem', margin: 0 }}>Review &amp; Attention Items ({anomalyCount})</h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+                  Records flagged with unverified factors, missing scopes, or historical quantity deviations
+                </p>
+              </div>
+            </div>
+
+            {isAuditorOrAdmin && (
+              <Link to="/reviews" className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', color: 'var(--status-review-color)', borderColor: 'var(--status-review-border)' }}>
+                <span>Open Review Workspace</span>
+                <ArrowRight size={14} />
+              </Link>
+            )}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.75rem' }}>
+            {flaggedItems.slice(0, 3).map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  padding: '0.85rem 1rem',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem' }}>
+                  <strong style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>{item.activity}</strong>
+                  <StatusBadge status={item.emission?.status || 'Needs Review'} />
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  Quantity: {Number(item.quantity).toLocaleString()} {item.unit} &bull; Date: {item.date}
+                </div>
+                {item.emission?.review_reason && (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--status-review-color)', marginTop: '0.35rem', lineHeight: 1.4 }}>
+                    {item.emission.review_reason}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Recent Activities Section */}
       <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '2rem' }}>

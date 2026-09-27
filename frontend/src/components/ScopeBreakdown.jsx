@@ -9,7 +9,7 @@ export function ScopeBreakdown({ scope1 = 0, scope2 = 0, scope3 = 0, total = 0 }
 
   const p1 = numericTotal > 0 ? Math.round((numericScope1 / numericTotal) * 100) : 0;
   const p2 = numericTotal > 0 ? Math.round((numericScope2 / numericTotal) * 100) : 0;
-  const p3 = hasData ? Math.max(0, 100 - p1 - p2) : 0;
+  const p3 = numericTotal > 0 ? Math.max(0, 100 - p1 - p2) : 0;
 
   return (
     <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
@@ -35,7 +35,7 @@ export function ScopeBreakdown({ scope1 = 0, scope2 = 0, scope3 = 0, total = 0 }
             textAlign: 'center',
             color: 'var(--text-muted)',
             fontSize: '0.9rem',
-            background: 'rgba(15, 23, 42, 0.4)',
+            background: 'var(--bg-card-hover)',
             borderRadius: 'var(--radius-md)',
             border: '1px dashed var(--border-subtle)',
           }}
@@ -51,7 +51,8 @@ export function ScopeBreakdown({ scope1 = 0, scope2 = 0, scope3 = 0, total = 0 }
               borderRadius: '7px',
               overflow: 'hidden',
               display: 'flex',
-              background: 'rgba(255, 255, 255, 0.05)',
+              background: 'var(--bg-input)',
+              border: '1px solid var(--border-subtle)',
               marginBottom: '1.5rem',
             }}
           >

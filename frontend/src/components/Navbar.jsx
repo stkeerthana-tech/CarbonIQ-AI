@@ -9,7 +9,7 @@ export function Navbar({ onToggleSidebar, activeCompany, companies, onSelectComp
     <header
       style={{
         height: '64px',
-        background: 'rgba(10, 14, 23, 0.85)',
+        background: 'var(--bg-header)',
         backdropFilter: 'blur(10px)',
         borderBottom: '1px solid var(--border-subtle)',
         display: 'flex',
@@ -55,8 +55,8 @@ export function Navbar({ onToggleSidebar, activeCompany, companies, onSelectComp
                 fontSize: '0.85rem',
                 height: 'auto',
                 width: 'auto',
-                background: 'rgba(30, 41, 59, 0.6)',
-                borderColor: 'rgba(255, 255, 255, 0.1)',
+                background: 'var(--bg-input)',
+                borderColor: 'var(--border-subtle)',
               }}
             >
               {companies.map((c) => (
@@ -82,13 +82,14 @@ export function Navbar({ onToggleSidebar, activeCompany, companies, onSelectComp
             fontSize: '0.75rem',
             padding: '0.3rem 0.65rem',
             borderRadius: '9999px',
-            background: 'rgba(16, 185, 129, 0.08)',
-            border: '1px solid rgba(16, 185, 129, 0.25)',
-            color: '#34d399',
+            background: 'var(--status-calc-bg)',
+            border: '1px solid var(--status-calc-border)',
+            color: 'var(--status-calc-text)',
+            fontWeight: 600,
           }}
           title="Deterministic backend connected & active"
         >
-          <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981' }} />
+          <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--esg-accent)' }} />
           <span>Audit Engine Online</span>
         </div>
       </div>

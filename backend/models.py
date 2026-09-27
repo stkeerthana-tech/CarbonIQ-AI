@@ -154,12 +154,28 @@ class EmissionResult(db.Model):
     review_reason = db.Column(db.Text, nullable=True)       # Why review is needed
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
-    audit_record = db.relationship(
-        "AuditRecord", backref="emission_result", uselist=False, lazy=True
+    audit_records = db.relationship(
+        "AuditRecord",
+        backref="emission_result",
+        lazy=True,
+        order_by="AuditRecord.timestamp.asc()",
     )
 
+    @property
+    def audit_record(self):
+        """Return the initial calculation audit record."""
+        return self.audit_records[0] if self.audit_records else None
+
+    @property
+    def resolution_record(self):
+        """Return the auditor resolution audit record if one exists."""
+        for rec in reversed(self.audit_records):
+            if rec.status in ("Reviewed - Valid", "Reviewed - Issue"):
+                return rec
+        return None
+
     def to_dict(self) -> dict:
-        return {
+        data = {
             "id": self.id,
             "activity_id": self.activity_id,
             "factor_id": self.factor_id,
@@ -173,6 +189,10 @@ class EmissionResult(db.Model):
             "review_reason": self.review_reason,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
+        res_rec = self.resolution_record
+        if res_rec:
+            data["resolution"] = res_rec.to_dict()
+        return data
 
 
 # ---------------------------------------------------------------------------

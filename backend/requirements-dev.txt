@@ -1,0 +1,7 @@
+# =============================================================================
+# Carboniq AI - Development & Testing Dependencies
+# =============================================================================
+-r requirements.txt
+
+# Additional Testing & Linting Tools
+pytest>=8.0.0,<10.0.0

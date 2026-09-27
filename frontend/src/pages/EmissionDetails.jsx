@@ -201,10 +201,10 @@ export function EmissionDetails() {
                     fontFamily: 'monospace',
                     fontSize: '0.95rem',
                     padding: '0.85rem 1.1rem',
-                    background: 'rgba(0, 0, 0, 0.45)',
+                    background: 'var(--bg-input)',
                     borderRadius: 'var(--radius-md)',
                     marginTop: '0.35rem',
-                    color: '#38bdf8',
+                    color: 'var(--text-primary)',
                     border: '1px solid var(--border-subtle)',
                   }}
                 >
@@ -254,7 +254,7 @@ export function EmissionDetails() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', background: 'rgba(0, 0, 0, 0.25)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', background: 'var(--bg-card-hover)', border: '1px solid var(--border-subtle)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
             <div>
               <span style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>Audit Record ID</span>
               <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>#{audit.id || 'N/A'}</div>
@@ -279,7 +279,8 @@ export function EmissionDetails() {
                   fontFamily: 'monospace',
                   fontSize: '0.8rem',
                   padding: '0.85rem',
-                  background: 'rgba(0, 0, 0, 0.5)',
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-md)',
                   marginTop: '0.35rem',
                   color: 'var(--text-secondary)',

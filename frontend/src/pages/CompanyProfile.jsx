@@ -75,10 +75,10 @@ export function CompanyProfile() {
           role="alert"
           style={{
             padding: '1rem',
-            background: 'rgba(16, 185, 129, 0.12)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
+            background: 'var(--status-valid-bg)',
+            border: '1px solid var(--status-valid-border)',
             borderRadius: 'var(--radius-md)',
-            color: '#34d399',
+            color: 'var(--status-valid-color)',
             marginBottom: '1.5rem',
             display: 'flex',
             alignItems: 'center',
@@ -95,10 +95,10 @@ export function CompanyProfile() {
           role="alert"
           style={{
             padding: '1rem',
-            background: 'rgba(239, 68, 68, 0.12)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
+            background: 'var(--status-flagged-bg)',
+            border: '1px solid var(--status-flagged-border)',
             borderRadius: 'var(--radius-md)',
-            color: '#f87171',
+            color: 'var(--status-flagged-color)',
             marginBottom: '1.5rem',
             display: 'flex',
             alignItems: 'center',
@@ -242,7 +242,7 @@ export function CompanyProfile() {
                 style={{
                   padding: '1.25rem',
                   borderRadius: 'var(--radius-md)',
-                  background: isSelected ? 'var(--primary-light)' : 'rgba(30, 41, 59, 0.4)',
+                  background: isSelected ? 'var(--nav-active-bg)' : 'var(--bg-card-hover)',
                   border: isSelected ? '1px solid var(--primary)' : '1px solid var(--border-subtle)',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',

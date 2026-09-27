@@ -88,7 +88,7 @@ export function MetricCard({ title, value, unit, icon: Icon, subtitle, color = '
       </div>
 
       {subtitle && (
-        <div style={{ marginTop: '0.5rem', fontSize: '0.775rem', color: alert ? 'var(--status-flagged-text)' : 'var(--text-muted)' }}>
+        <div style={{ marginTop: '0.5rem', fontSize: '0.775rem', color: alert ? 'var(--status-flagged-color)' : 'var(--text-muted)' }}>
           {subtitle}
         </div>
       )}

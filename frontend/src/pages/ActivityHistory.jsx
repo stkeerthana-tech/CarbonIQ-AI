@@ -87,10 +87,10 @@ export function ActivityHistory() {
           role="alert"
           style={{
             padding: '1rem',
-            background: 'rgba(239, 68, 68, 0.12)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
+            background: 'var(--status-flagged-bg)',
+            border: '1px solid var(--status-flagged-border)',
             borderRadius: 'var(--radius-md)',
-            color: '#f87171',
+            color: 'var(--status-flagged-color)',
             marginBottom: '1.5rem',
             display: 'flex',
             alignItems: 'center',

@@ -196,15 +196,28 @@ The React frontend starts on `http://localhost:3000`.
 
 ---
 
-## Live Demo
+## Demo Login Credentials
 
+<<<<<<< HEAD
 - Live application URL: deployment URL to be provided
 - Demo role: Company User
 - Demo email: `george@gmail.com`
 - Demo password: CarbonIQ@Demo2026!
 - Please provide these credentials securely to evaluators.
+=======
+The following demo accounts are pre-configured in the database for evaluation. Note the specific login page designated for each role:
+>>>>>>> 9f498cc (Finalize Carbonix AI for deployment)
 
-Demo access is provided through a dedicated Company User account for evaluation. The account is restricted to the demo organization and does not have administrator privileges. Administrative functions such as user management, organization management, and role assignment remain restricted to administrators.
+| Role | Login Page | Email | Password |
+|---|---|---|---|
+| Company User | Customer Login | `test@carboniq.ai` | `Carbonix@2026User` |
+| Auditor | Staff Login | `george@gmail.com` | `Carbonix@2026Auditor` |
+| Administrator | Staff Login | `stkeerthana27@gmail.com` | `Carbonix@2026Admin` |
+
+### Login Access Details:
+- **Company User** (`test@carboniq.ai`): Access through the **Customer Login** page. Has access to organization emissions data, activity management, manual entry, and Cora emissions chat.
+- **Auditor** (`george@gmail.com`): Access through the **Staff Login** page. Has permissions to review flagged activities, audit calculations, and inspect compliance lineage.
+- **Administrator** (`stkeerthana27@gmail.com`): Access through the **Staff Login** page. Has full system permissions including user management, organization oversight, and review approvals.
 
 ---
 

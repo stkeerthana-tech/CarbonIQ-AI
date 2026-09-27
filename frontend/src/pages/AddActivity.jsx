@@ -217,9 +217,9 @@ export function AddActivity() {
                     gap: '0.65rem',
                   }}
                 >
-                  <AlertOctagon size={20} color="#ef4444" style={{ flexShrink: 0, marginTop: '0.15rem' }} />
+                  <AlertOctagon size={20} color="var(--status-flagged-color)" style={{ flexShrink: 0, marginTop: '0.15rem' }} />
                   <div>
-                    <strong style={{ color: '#fff', display: 'block', marginBottom: '0.25rem' }}>
+                    <strong style={{ color: 'var(--status-flagged-color)', display: 'block', marginBottom: '0.25rem' }}>
                       Statistical Anomaly Detected
                     </strong>
                     {submissionResult.anomaly.message}
@@ -233,7 +233,8 @@ export function AddActivity() {
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
                   gap: '0.85rem',
-                  background: 'rgba(15, 23, 42, 0.6)',
+                  background: 'var(--bg-card-hover)',
+                  border: '1px solid var(--border-subtle)',
                   padding: '1rem',
                   borderRadius: 'var(--radius-md)',
                   marginBottom: '1.25rem',
@@ -512,7 +513,8 @@ export function AddActivity() {
                 gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                 gap: '1rem',
                 marginBottom: '1.25rem',
-                background: 'rgba(15, 23, 42, 0.5)',
+                background: 'var(--bg-card-hover)',
+                border: '1px solid var(--border-subtle)',
                 padding: '1.25rem',
                 borderRadius: 'var(--radius-md)',
               }}
@@ -550,10 +552,11 @@ export function AddActivity() {
                   fontFamily: 'monospace',
                   fontSize: '0.9rem',
                   padding: '0.75rem 1rem',
-                  background: 'rgba(0, 0, 0, 0.4)',
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-sm)',
                   marginTop: '0.35rem',
-                  color: 'var(--secondary)',
+                  color: 'var(--text-primary)',
                 }}
               >
                 {previewResult.calculation}

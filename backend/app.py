@@ -52,32 +52,26 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Application factory
 # ---------------------------------------------------------------------------
+from config import get_config, Config, ProductionConfig
 
-def create_app() -> Flask:
+def create_app(config_object: type[Config] | None = None) -> Flask:
     app = Flask(__name__)
 
     # -----------------------------------------------------------------------
     # Configuration
     # -----------------------------------------------------------------------
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-this")
-    app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "dev-jwt-change-this")
+    if config_object is None:
+        config_object = get_config()
 
-    # Resolve relative SQLite paths from the backend directory, not Flask's
-    # instance directory or whichever directory launched the process.
-    default_db = f"sqlite:///{os.path.join(_HERE, 'carboniq.db')}"
-    database_uri = os.environ.get("DATABASE_URI", default_db)
-    if database_uri.startswith("sqlite:///") and not database_uri.startswith("sqlite:////"):
-        database_path = database_uri[len("sqlite:///"):]
-        if not os.path.isabs(database_path):
-            database_uri = f"sqlite:///{os.path.abspath(os.path.join(_HERE, database_path))}"
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config.from_object(config_object)
 
-    if app.config["SECRET_KEY"].startswith("dev-"):
+    if issubclass(config_object, ProductionConfig):
+        ProductionConfig.validate_production()
+    elif app.config.get("SECRET_KEY", "").startswith("dev-"):
         logger.warning(
             "Using development SECRET_KEY. Set SECRET_KEY in backend/.env for production."
         )
-    if app.config["JWT_SECRET_KEY"].startswith("dev-"):
+    if app.config.get("JWT_SECRET_KEY", "").startswith("dev-"):
         logger.warning(
             "Using development JWT_SECRET_KEY. Set JWT_SECRET_KEY in backend/.env for production."
         )
@@ -89,7 +83,7 @@ def create_app() -> Flask:
     init_db(app)
 
     JWTManager(app)
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    CORS(app, resources={r"/api/*": {"origins": app.config.get("CORS_ORIGINS", "*")}})
 
     # -----------------------------------------------------------------------
     # Register blueprints

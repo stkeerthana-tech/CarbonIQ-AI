@@ -133,19 +133,16 @@ export function AIInsightPanel({ companyId, dashboardData }) {
 
   /* ── styles ─────────────────────────────────────────────────────────── */
   const panelStyle = {
-    background: 'linear-gradient(135deg, rgba(16,16,32,0.85) 0%, rgba(10,20,40,0.92) 100%)',
+    background: 'var(--bg-card)',
     border: generated && enabled
-      ? '1px solid rgba(52, 211, 153, 0.35)'
-      : '1px solid rgba(99,102,241,0.25)',
+      ? '1px solid var(--status-calc-border)'
+      : '1px solid var(--border-subtle)',
     borderRadius: 'var(--radius-lg, 16px)',
     padding: '1.75rem',
     marginBottom: '2rem',
-    backdropFilter: 'blur(12px)',
     position: 'relative',
     overflow: 'hidden',
-    boxShadow: generated && enabled
-      ? '0 0 40px rgba(52,211,153,0.06), 0 4px 24px rgba(0,0,0,0.35)'
-      : '0 4px 24px rgba(0,0,0,0.3)',
+    boxShadow: 'var(--shadow-card)',
     transition: 'border 0.4s ease, box-shadow 0.4s ease',
   };
 
@@ -156,7 +153,7 @@ export function AIInsightPanel({ companyId, dashboardData }) {
     width: '220px',
     height: '220px',
     borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)',
+    background: 'radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 70%)',
     pointerEvents: 'none',
   };
 
@@ -176,25 +173,25 @@ export function AIInsightPanel({ companyId, dashboardData }) {
   };
 
   const insightBoxStyle = {
-    background: 'rgba(52, 211, 153, 0.04)',
-    border: '1px solid rgba(52,211,153,0.15)',
+    background: 'var(--bg-card-hover)',
+    border: '1px solid var(--border-subtle)',
     borderRadius: '10px',
     padding: '1.25rem 1.5rem',
     lineHeight: 1.75,
     fontSize: '0.895rem',
-    color: 'var(--text-primary, #e2e8f0)',
+    color: 'var(--text-primary)',
     whiteSpace: 'pre-wrap',
     maxHeight: '420px',
     overflowY: 'auto',
     scrollbarWidth: 'thin',
-    scrollbarColor: 'rgba(52,211,153,0.3) transparent',
+    scrollbarColor: 'var(--primary-light) transparent',
   };
 
   const skeletonLineStyle = (width) => ({
     height: '14px',
     width,
     borderRadius: '7px',
-    background: 'linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.04) 75%)',
+    background: 'linear-gradient(90deg, var(--border-subtle) 25%, var(--bg-card-hover) 50%, var(--border-subtle) 75%)',
     backgroundSize: '200% 100%',
     animation: 'shimmer 1.6s infinite',
     marginBottom: '10px',
@@ -203,7 +200,7 @@ export function AIInsightPanel({ companyId, dashboardData }) {
   const disclaimerStyle = {
     marginTop: '0.85rem',
     fontSize: '0.75rem',
-    color: 'var(--text-muted, #64748b)',
+    color: 'var(--text-muted)',
     display: 'flex',
     alignItems: 'center',
     gap: '0.4rem',
@@ -230,9 +227,9 @@ export function AIInsightPanel({ companyId, dashboardData }) {
           cursor: pointer;
           border: none;
           transition: opacity 0.2s, transform 0.15s;
-          background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+          background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
           color: #fff;
-          box-shadow: 0 2px 14px rgba(99,102,241,0.35);
+          box-shadow: 0 2px 14px rgba(124, 58, 237, 0.35);
         }
         .ai-btn:disabled {
           opacity: 0.55;
@@ -248,13 +245,13 @@ export function AIInsightPanel({ companyId, dashboardData }) {
           align-items: center;
           gap: 0.35rem;
           padding: 0.2rem 0.65rem;
-          background: rgba(99,102,241,0.15);
-          border: 1px solid rgba(99,102,241,0.3);
+          background: var(--nav-active-bg);
+          border: 1px solid var(--nav-active-border);
           border-radius: 999px;
           font-size: 0.7rem;
           font-weight: 700;
           letter-spacing: 0.04em;
-          color: #a5b4fc;
+          color: var(--nav-active-color);
           text-transform: uppercase;
         }
       `}</style>
@@ -262,12 +259,12 @@ export function AIInsightPanel({ companyId, dashboardData }) {
       {/* Header */}
       <div style={headerStyle}>
         <div style={titleStyle}>
-          <Sparkles size={20} style={{ color: '#818cf8' }} />
+          <Sparkles size={20} style={{ color: '#a78bfa' }} />
           <h3 style={{ fontSize: '1.1rem', margin: 0, fontWeight: 700 }}>
-            AI Carbon Intelligence
+            Cora
           </h3>
           <span className="ai-badge">
-            <Bot size={11} /> Lyzr Agent
+            <Bot size={11} /> AI Assistant
           </span>
         </div>
 
@@ -287,7 +284,7 @@ export function AIInsightPanel({ companyId, dashboardData }) {
       </div>
 
       <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary, #94a3b8)', marginBottom: '1.25rem', marginTop: 0 }}>
-        AI-powered compliance review and reduction recommendations — based on the verified emission data above.
+        Cora &mdash; your AI carbon intelligence assistant. Compliance review and reduction recommendations based on verified emission data.
       </p>
 
       {/* Loading skeleton */}
@@ -306,10 +303,10 @@ export function AIInsightPanel({ companyId, dashboardData }) {
           alignItems: 'flex-start',
           gap: '0.6rem',
           padding: '1rem',
-          background: 'rgba(239,68,68,0.08)',
-          border: '1px solid rgba(239,68,68,0.25)',
+          background: 'var(--status-flagged-bg)',
+          border: '1px solid var(--status-flagged-border)',
           borderRadius: '10px',
-          color: '#f87171',
+          color: 'var(--status-flagged-color)',
           fontSize: '0.875rem',
         }}>
           <AlertTriangle size={17} style={{ marginTop: '1px', flexShrink: 0 }} />
@@ -345,8 +342,8 @@ export function AIInsightPanel({ companyId, dashboardData }) {
         }}>
           <Bot size={30} style={{ margin: '0 auto 0.75rem', opacity: 0.35 }} />
           <p style={{ margin: 0 }}>
-            Click <strong style={{ color: 'var(--text-secondary)' }}>Generate AI Review</strong> to get a
-            compliance analysis and reduction recommendations from the CarbonIQ AI agent.
+            Click <strong style={{ color: 'var(--text-secondary)' }}>Generate AI Review</strong> to ask
+            Cora for a compliance analysis and reduction recommendations.
           </p>
         </div>
       )}

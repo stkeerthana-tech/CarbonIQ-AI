@@ -23,16 +23,39 @@ import uuid
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Configuration (loaded from environment — never hard-coded)
+# Configuration (loaded from environment/app config — never hard-coded)
 # ---------------------------------------------------------------------------
 
-LYZR_API_KEY  = os.environ.get("LYZR_API_KEY", "")
-LYZR_AGENT_ID = os.environ.get("LYZR_AGENT_ID", "")
-LYZR_ENDPOINT = os.environ.get(
-    "LYZR_ENDPOINT",
-    "https://agent-prod.studio.lyzr.ai/v3/inference/chat/",
-)
-LYZR_TIMEOUT  = int(os.environ.get("LYZR_TIMEOUT_SECONDS", "20"))
+def _get_config_val(key: str, default: str = "") -> str:
+    """Retrieve config value from Flask current_app or environment fallback."""
+    try:
+        from flask import current_app
+        if current_app and current_app.config.get(key):
+            return str(current_app.config.get(key))
+    except Exception:
+        pass
+    return os.environ.get(key, default)
+
+
+def get_api_key() -> str:
+    return _get_config_val("LYZR_API_KEY", "")
+
+
+def get_agent_id() -> str:
+    return _get_config_val("LYZR_AGENT_ID", "")
+
+
+def get_endpoint() -> str:
+    return _get_config_val("LYZR_ENDPOINT", "https://agent-prod.studio.lyzr.ai/v3/inference/chat/")
+
+
+def get_timeout() -> int:
+    val = _get_config_val("LYZR_TIMEOUT_SECONDS", "20")
+    try:
+        return int(val)
+    except (ValueError, TypeError):
+        return 20
+
 
 # System user identifier sent to Lyzr (non-sensitive, used for session tracking)
 LYZR_SYSTEM_USER = "carboniq-backend-agent"
@@ -40,7 +63,7 @@ LYZR_SYSTEM_USER = "carboniq-backend-agent"
 
 def is_configured() -> bool:
     """Return True only when both API key and agent ID are present."""
-    return bool(LYZR_API_KEY) and bool(LYZR_AGENT_ID)
+    return bool(get_api_key()) and bool(get_agent_id())
 
 
 def build_carbon_prompt(context: dict) -> str:
@@ -150,23 +173,28 @@ def chat(context: dict, session_id: str | None = None) -> dict:
     sid = session_id or str(uuid.uuid4())
     message = build_carbon_prompt(context)
 
+    agent_id = get_agent_id()
+    api_key = get_api_key()
+    endpoint = get_endpoint()
+    timeout_sec = get_timeout()
+
     payload = {
         "user_id":    LYZR_SYSTEM_USER,
-        "agent_id":   LYZR_AGENT_ID,
+        "agent_id":   agent_id,
         "session_id": sid,
         "message":    message,
     }
     headers = {
-        "x-api-key":    LYZR_API_KEY,
+        "x-api-key":    api_key,
         "Content-Type": "application/json",
     }
 
     try:
         resp = requests.post(
-            LYZR_ENDPOINT,
+            endpoint,
             json=payload,
             headers=headers,
-            timeout=LYZR_TIMEOUT,
+            timeout=timeout_sec,
         )
         resp.raise_for_status()
         data = resp.json()
@@ -179,7 +207,7 @@ def chat(context: dict, session_id: str | None = None) -> dict:
         }
 
     except requests.exceptions.Timeout:
-        logger.warning(f"Lyzr agent timed out after {LYZR_TIMEOUT}s for session {sid}")
+        logger.warning(f"Lyzr agent timed out after {timeout_sec}s for session {sid}")
         return {
             "enabled":    True,
             "response":   "The AI agent took too long to respond. Please try again.",

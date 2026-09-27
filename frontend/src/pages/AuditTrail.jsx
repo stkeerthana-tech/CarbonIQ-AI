@@ -198,11 +198,11 @@ export function AuditTrail() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', position: 'relative' }}>
                   {/* STEP 1: ACTIVITY DATA */}
                   <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
-                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(56, 189, 248, 0.15)', color: 'var(--scope-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
                       1
                     </div>
-                    <div style={{ flex: 1, background: 'rgba(15, 23, 42, 0.5)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#38bdf8', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                    <div style={{ flex: 1, background: 'var(--bg-card-hover)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--scope-1)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
                         Operational Activity Data
                       </div>
                       <div style={{ fontSize: '1.05rem', fontWeight: 600 }}>
@@ -216,11 +216,11 @@ export function AuditTrail() {
 
                   {/* STEP 2: EMISSION FACTOR */}
                   <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
-                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(129, 140, 248, 0.15)', color: '#818cf8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(129, 140, 248, 0.15)', color: 'var(--scope-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
                       2
                     </div>
-                    <div style={{ flex: 1, background: 'rgba(15, 23, 42, 0.5)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#818cf8', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                    <div style={{ flex: 1, background: 'var(--bg-card-hover)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--scope-2)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
                         Emission Factor Retrieved (CSV Database)
                       </div>
                       <div style={{ fontSize: '1.05rem', fontWeight: 600 }}>
@@ -234,19 +234,19 @@ export function AuditTrail() {
 
                   {/* STEP 3: DETERMINISTIC CALCULATION */}
                   <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
-                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(192, 132, 252, 0.15)', color: '#c084fc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(192, 132, 252, 0.15)', color: 'var(--scope-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
                       3
                     </div>
-                    <div style={{ flex: 1, background: 'rgba(15, 23, 42, 0.5)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#c084fc', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                    <div style={{ flex: 1, background: 'var(--bg-card-hover)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--scope-3)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
                         Deterministic Calculation Formula
                       </div>
                       {emission?.calculation ? (
-                        <div style={{ fontFamily: 'monospace', fontSize: '0.9rem', color: '#38bdf8', marginTop: '0.25rem' }}>
+                        <div style={{ fontFamily: 'monospace', fontSize: '0.9rem', color: 'var(--text-primary)', marginTop: '0.25rem' }}>
                           {emission.calculation}
                         </div>
                       ) : (
-                        <div style={{ fontSize: '0.85rem', color: 'var(--status-review-text)', marginTop: '0.25rem' }}>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--status-review-color)', marginTop: '0.25rem' }}>
                           Calculation blocked: {emission?.review_reason || 'Factor review required.'}
                         </div>
                       )}
@@ -255,18 +255,18 @@ export function AuditTrail() {
 
                   {/* STEP 4: VERIFIED RESULT */}
                   <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
-                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: 'var(--esg-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
                       4
                     </div>
-                    <div style={{ flex: 1, background: 'rgba(15, 23, 42, 0.5)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#10b981', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                    <div style={{ flex: 1, background: 'var(--bg-card-hover)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--esg-accent)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
                         Verified Final Result
                       </div>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)' }}>
                         {emission?.co2e_tonnes !== null && emission?.co2e_tonnes !== undefined ? (
                           `${emission.co2e_tonnes} tCO2e (${Number(emission.co2e_kg).toLocaleString()} kg)`
                         ) : (
-                          <span style={{ color: 'var(--status-review-text)' }}>Status: Needs Review</span>
+                          <span style={{ color: 'var(--status-review-color)' }}>Status: Needs Review</span>
                         )}
                       </div>
                       <div style={{ marginTop: '0.35rem' }}>
@@ -277,22 +277,60 @@ export function AuditTrail() {
 
                   {/* STEP 5: REGULATORY SOURCE & TIMESTAMP */}
                   <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
-                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.08)', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
                       5
                     </div>
-                    <div style={{ flex: 1, background: 'rgba(15, 23, 42, 0.5)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+                    <div style={{ flex: 1, background: 'var(--bg-card-hover)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
                       <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                        Evidence Source &amp; Timestamp
+                        Initial Calculation Audit Event
                       </div>
                       <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                        {audit?.source || emission?.source || 'No source recorded.'}
+                        Source: {audit?.source || emission?.source || 'Verified Standard'}
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                         <Clock size={13} />
-                        <span>Audit Recorded At: {audit?.timestamp || selectedActivity.created_at}</span>
+                        <span>Calculation Logged At: {audit?.timestamp || selectedActivity.created_at}</span>
                       </div>
                     </div>
                   </div>
+
+                  {/* STEP 6 (If Resolved): AUDITOR REVIEW RESOLUTION EVENT */}
+                  {activityDetails?.audit_trail && activityDetails.audit_trail.length > 1 && (
+                    <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
+                      <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(52, 211, 153, 0.2)', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
+                        <ShieldCheck size={18} />
+                      </div>
+                      <div style={{ flex: 1, background: 'rgba(16, 185, 129, 0.06)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#34d399', textTransform: 'uppercase' }}>
+                            Review Resolution Event
+                          </div>
+                          <StatusBadge status={emission?.status} />
+                        </div>
+                        {(() => {
+                          const resRecord = activityDetails.audit_trail.find(
+                            (a) => a.status === 'Reviewed - Valid' || a.status === 'Reviewed - Issue'
+                          );
+                          let resParsed = null;
+                          try {
+                            if (resRecord?.activity_data) resParsed = JSON.parse(resRecord.activity_data);
+                          } catch (e) {}
+
+                          return (
+                            <div>
+                              <div style={{ fontSize: '0.875rem', color: 'var(--text-primary)', marginBottom: '0.35rem' }}>
+                                <strong>Auditor Notes:</strong> "{resParsed?.resolution_notes || resRecord?.review_reason || 'Verified'}"
+                              </div>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.4rem' }}>
+                                <span>Reviewer: {resParsed?.reviewer_name || resParsed?.reviewer_email || 'Staff'} ({resParsed?.reviewer_role || 'auditor'})</span>
+                                <span>Resolved At: {resParsed?.resolved_at ? new Date(resParsed.resolved_at).toLocaleString() : (resRecord?.timestamp || 'Recorded')}</span>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : null}

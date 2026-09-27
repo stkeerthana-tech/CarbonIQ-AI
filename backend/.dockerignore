@@ -1,0 +1,28 @@
+# Version control
+.git/
+.gitignore
+.github/
+
+# Python virtual environments & bytecode
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local database files and logs
+carboniq.db
+*.db
+*.sqlite
+*.sqlite3
+instance/
+*.log
+
+# Secrets and environment files
+.env
+.env.*
+!.env.example

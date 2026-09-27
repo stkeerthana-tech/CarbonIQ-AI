@@ -1,71 +1,79 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, ArrowRight, ArrowLeft, ShieldCheck, AlertCircle, Leaf } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Eye, EyeOff, ArrowRight, ArrowLeft, ShieldCheck, AlertCircle, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-/**
- * Public Company User signup page.
- * Role is always 'company_user' — not selectable by the user.
- * Backend authorization remains the single source of truth for role assignment.
- */
-export function Register() {
+export function StaffLogin() {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const location = useLocation();
+  const { login, isAuthenticated } = useAuth();
 
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sessionMessage, setSessionMessage] = useState(() => {
+    const fromState =
+      location.state?.message ||
+      (location.state?.sessionExpired ? 'Your session has expired. Please log in again.' : null);
+    if (fromState) return fromState;
+    try {
+      const stored = sessionStorage.getItem('carboniq_session_expired');
+      if (stored) {
+        sessionStorage.removeItem('carboniq_session_expired');
+        return stored;
+      }
+    } catch (e) {}
+    return null;
+  });
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    const handleAuthExpired = (e) => {
+      setSessionMessage(e.detail?.message || 'Your session has expired. Please log in again.');
+    };
+    window.addEventListener('carboniq-auth-expired', handleAuthExpired);
+    return () => window.removeEventListener('carboniq-auth-expired', handleAuthExpired);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSessionMessage(null);
 
-    if (!name.trim()) {
-      setError('Full name is required.');
-      return;
-    }
-    if (!email.trim()) {
-      setError('Email address is required.');
-      return;
-    }
-    if (!password || password.length < 8) {
-      setError('Password must be at least 8 characters long.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+    if (!email.trim() || !password) {
+      setError('Please enter both email and password.');
       return;
     }
 
     setLoading(true);
     try {
-      // Role is always company_user for public registration
-      const result = await register(name.trim(), email.trim(), password, 'company_user');
+      const result = await login(email.trim(), password);
       if (result.success) {
         navigate('/dashboard', { replace: true });
       } else {
-        setError(result.error || 'Registration failed. Please try again.');
+        setError(result.error || 'Authentication failed. Please verify your credentials.');
       }
     } catch (err) {
-      setError(err.message || 'Registration failed.');
+      setError(err.message || 'Authentication failed.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-bg" style={{ alignItems: 'flex-start', overflowY: 'auto' }}>
+    <div className="auth-bg">
       <div
         className="animate-scale-in"
         style={{
           width: '100%',
-          maxWidth: '460px',
-          margin: '2rem auto',
+          maxWidth: '440px',
           background: 'var(--bg-card)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
@@ -77,7 +85,7 @@ export function Register() {
           overflow: 'hidden',
         }}
       >
-        {/* Card inner glow */}
+        {/* Card inner glow — blue tint for staff */}
         <div
           style={{
             position: 'absolute',
@@ -86,15 +94,15 @@ export function Register() {
             width: '200px',
             height: '200px',
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%)',
             pointerEvents: 'none',
           }}
         />
 
         {/* Back link */}
         <Link
-          to="/login/customer"
-          id="back-to-customer-login"
+          to="/select-account"
+          id="back-to-account-selection-staff"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -108,26 +116,47 @@ export function Register() {
           onMouseOut={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
         >
           <ArrowLeft size={14} />
-          Back to sign in
+          Back to account selection
         </Link>
 
-        {/* Brand */}
+        {/* Brand — staff variant */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div
             style={{
               width: '52px',
               height: '52px',
               borderRadius: '14px',
-              background: 'linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%)',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#fff',
               marginBottom: '1rem',
-              boxShadow: '0 4px 20px rgba(124, 58, 237, 0.4)',
+              boxShadow: '0 4px 20px rgba(59, 130, 246, 0.35)',
             }}
           >
-            <Leaf size={26} />
+            <Shield size={26} />
+          </div>
+
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              padding: '0.2rem 0.75rem',
+              borderRadius: '9999px',
+              background: 'rgba(59, 130, 246, 0.12)',
+              border: '1px solid rgba(59, 130, 246, 0.28)',
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'var(--status-calc-color)',
+              marginBottom: '1rem',
+            }}
+          >
+            <Shield size={11} />
+            Authorized Personnel Only
           </div>
 
           <h1
@@ -140,12 +169,34 @@ export function Register() {
               color: 'var(--text-primary)',
             }}
           >
-            Create your account
+            Staff Access
           </h1>
           <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0 }}>
-            Start managing your organization&apos;s carbon activity.
+            Authorized personnel only.
           </p>
         </div>
+
+        {/* Session expired alert */}
+        {sessionMessage && (
+          <div
+            role="alert"
+            style={{
+              padding: '0.75rem 1rem',
+              borderRadius: 'var(--radius-md)',
+              background: 'var(--status-review-bg)',
+              border: '1px solid var(--status-review-border)',
+              color: 'var(--status-review-color)',
+              fontSize: '0.85rem',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}
+          >
+            <AlertCircle size={16} />
+            <span>{sessionMessage}</span>
+          </div>
+        )}
 
         {/* Error alert */}
         {error && (
@@ -169,33 +220,17 @@ export function Register() {
           </div>
         )}
 
+        {/* Form */}
         <form onSubmit={handleSubmit} noValidate>
           <div className="form-group">
-            <label className="form-label" htmlFor="signup-name">
-              Full Name
-            </label>
-            <input
-              id="signup-name"
-              type="text"
-              className="form-input"
-              placeholder="Jane Doe"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoComplete="name"
-              required
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label" htmlFor="signup-email">
+            <label className="form-label" htmlFor="staff-login-email">
               Email Address
             </label>
             <input
-              id="signup-email"
+              id="staff-login-email"
               type="email"
               className="form-input"
-              placeholder="jane@organization.com"
+              placeholder="staff@carbonix.ai"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
@@ -205,18 +240,18 @@ export function Register() {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="signup-password">
+            <label className="form-label" htmlFor="staff-login-password">
               Password
             </label>
             <div className="input-with-icon">
               <input
-                id="signup-password"
+                id="staff-login-password"
                 type={showPassword ? 'text' : 'password'}
                 className="form-input"
-                placeholder="Minimum 8 characters"
+                placeholder="••••••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
+                autoComplete="current-password"
                 required
                 disabled={loading}
                 style={{ paddingRight: '2.75rem' }}
@@ -233,40 +268,17 @@ export function Register() {
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="signup-confirm-password">
-              Confirm Password
-            </label>
-            <div className="input-with-icon">
-              <input
-                id="signup-confirm-password"
-                type={showConfirmPassword ? 'text' : 'password'}
-                className="form-input"
-                placeholder="Re-enter your password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                autoComplete="new-password"
-                required
-                disabled={loading}
-                style={{ paddingRight: '2.75rem' }}
-              />
-              <button
-                type="button"
-                className="input-icon-btn"
-                onClick={() => setShowConfirmPassword((prev) => !prev)}
-                aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
-                tabIndex={0}
-              >
-                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
           <button
-            id="signup-submit"
+            id="staff-login-submit"
             type="submit"
             className="btn btn-primary"
-            style={{ width: '100%', marginTop: '0.5rem', padding: '0.85rem' }}
+            style={{
+              width: '100%',
+              marginTop: '0.5rem',
+              padding: '0.85rem',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
+              boxShadow: '0 2px 12px rgba(59, 130, 246, 0.3)',
+            }}
             disabled={loading}
           >
             {loading ? (
@@ -281,40 +293,38 @@ export function Register() {
                     borderRadius: '50%',
                   }}
                 />
-                <span>Creating account...</span>
+                <span>Signing in...</span>
               </>
             ) : (
               <>
-                <span>Create Account</span>
+                <span>Sign In</span>
                 <ArrowRight size={17} />
               </>
             )}
           </button>
         </form>
 
-        {/* Sign in link */}
+        {/* No self-registration for staff */}
         <div
           style={{
             marginTop: '1.5rem',
-            textAlign: 'center',
-            fontSize: '0.85rem',
+            padding: '0.75rem 1rem',
+            borderRadius: 'var(--radius-md)',
+            background: 'rgba(59, 130, 246, 0.06)',
+            border: '1px solid rgba(59, 130, 246, 0.15)',
+            fontSize: '0.78rem',
             color: 'var(--text-muted)',
+            textAlign: 'center',
+            lineHeight: 1.5,
           }}
         >
-          Already have an account?{' '}
-          <Link
-            to="/login/customer"
-            id="go-to-login"
-            style={{ color: 'var(--primary-bright)', fontWeight: 600 }}
-          >
-            Sign in
-          </Link>
+          Staff accounts are provisioned by your administrator. Self-registration is not available for this portal.
         </div>
 
         {/* Trust footer */}
         <div
           style={{
-            marginTop: '1.75rem',
+            marginTop: '1.5rem',
             paddingTop: '1rem',
             borderTop: '1px solid var(--border-subtle)',
             display: 'flex',
@@ -326,11 +336,11 @@ export function Register() {
           }}
         >
           <ShieldCheck size={13} color="var(--esg-accent)" />
-          <span>Company User registration. Role-based access with encrypted credentials.</span>
+          <span>Role-based access controlled by the backend.</span>
         </div>
       </div>
     </div>
   );
 }
 
-export default Register;
+export default StaffLogin;

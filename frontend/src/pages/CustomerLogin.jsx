@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Eye, EyeOff, Leaf, Lock, Mail, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, ArrowLeft, ShieldCheck, AlertCircle, Leaf } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-export function Login() {
+export function CustomerLogin() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,7 +14,9 @@ export function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [sessionMessage, setSessionMessage] = useState(() => {
-    const fromState = location.state?.message || (location.state?.sessionExpired ? 'Your session has expired. Please log in again.' : null);
+    const fromState =
+      location.state?.message ||
+      (location.state?.sessionExpired ? 'Your session has expired. Please log in again.' : null);
     if (fromState) return fromState;
     try {
       const stored = sessionStorage.getItem('carboniq_session_expired');
@@ -25,6 +27,12 @@ export function Login() {
     } catch (e) {}
     return null;
   });
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     const handleAuthExpired = (e) => {
@@ -48,7 +56,7 @@ export function Login() {
     try {
       const result = await login(email.trim(), password);
       if (result.success) {
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       } else {
         setError(result.error || 'Invalid email or password.');
       }
@@ -66,40 +74,88 @@ export function Login() {
         style={{
           width: '100%',
           maxWidth: '440px',
-          padding: '2.5rem',
-          borderRadius: 'var(--radius-xl)',
           background: 'var(--bg-card)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
           border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-xl)',
+          padding: '2.5rem',
           boxShadow: 'var(--shadow-card)',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
-        {/* Brand Logo & Name */}
+        {/* Card inner glow */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '-60px',
+            right: '-60px',
+            width: '200px',
+            height: '200px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Back link */}
+        <Link
+          to="/select-account"
+          id="back-to-account-selection"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            fontSize: '0.8rem',
+            color: 'var(--text-muted)',
+            marginBottom: '1.75rem',
+            transition: 'color 0.15s',
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
+          onMouseOut={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+        >
+          <ArrowLeft size={14} />
+          Back to account selection
+        </Link>
+
+        {/* Brand */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div
             style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, var(--primary) 0%, #047857 100%)',
+              width: '52px',
+              height: '52px',
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#fff',
               marginBottom: '1rem',
-              boxShadow: '0 4px 16px var(--primary-glow)',
+              boxShadow: '0 4px 20px rgba(124, 58, 237, 0.4)',
             }}
           >
             <Leaf size={26} />
           </div>
-          <h1 style={{ fontSize: '1.65rem', letterSpacing: '-0.02em', marginBottom: '0.35rem', color: 'var(--text-primary)' }}>
-            Carbonix <span style={{ color: 'var(--primary)' }}>AI</span>
+
+          <h1
+            style={{
+              fontSize: '1.6rem',
+              fontFamily: 'var(--font-display)',
+              fontWeight: 800,
+              letterSpacing: '-0.025em',
+              marginBottom: '0.4rem',
+              color: 'var(--text-primary)',
+            }}
+          >
+            Welcome back
           </h1>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            Verified carbon intelligence, backed by evidence.
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0 }}>
+            Sign in to your Carbonix AI workspace.
           </p>
         </div>
 
-        {/* Session Expired Alert */}
+        {/* Session expired alert */}
         {sessionMessage && (
           <div
             role="alert"
@@ -121,7 +177,7 @@ export function Login() {
           </div>
         )}
 
-        {/* Error Alert */}
+        {/* Error alert */}
         {error && (
           <div
             role="alert"
@@ -138,38 +194,37 @@ export function Login() {
               gap: '0.5rem',
             }}
           >
+            <AlertCircle size={16} />
             <span>{error}</span>
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <div className="form-group">
-            <label className="form-label" htmlFor="login-email">
+            <label className="form-label" htmlFor="customer-login-email">
               Email Address
             </label>
-            <div className="input-with-icon">
-              <input
-                id="login-email"
-                type="email"
-                className="form-input"
-                placeholder="name@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                required
-                disabled={loading}
-              />
-            </div>
+            <input
+              id="customer-login-email"
+              type="email"
+              className="form-input"
+              placeholder="name@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              required
+              disabled={loading}
+            />
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="login-password">
+            <label className="form-label" htmlFor="customer-login-password">
               Password
             </label>
             <div className="input-with-icon">
               <input
-                id="login-password"
+                id="customer-login-password"
                 type={showPassword ? 'text' : 'password'}
                 className="form-input"
                 placeholder="••••••••••••"
@@ -178,14 +233,13 @@ export function Login() {
                 autoComplete="current-password"
                 required
                 disabled={loading}
-                style={{ paddingRight: '2.5rem' }}
+                style={{ paddingRight: '2.75rem' }}
               />
               <button
                 type="button"
                 className="input-icon-btn"
                 onClick={() => setShowPassword((prev) => !prev)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
-                title={showPassword ? 'Hide password' : 'Show password'}
                 tabIndex={0}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -194,14 +248,24 @@ export function Login() {
           </div>
 
           <button
+            id="customer-login-submit"
             type="submit"
             className="btn btn-primary"
-            style={{ width: '100%', marginTop: '0.75rem', padding: '0.8rem' }}
+            style={{ width: '100%', marginTop: '0.5rem', padding: '0.85rem' }}
             disabled={loading}
           >
             {loading ? (
               <>
-                <span className="spinner" style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%' }} />
+                <span
+                  className="spinner"
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid rgba(255,255,255,0.3)',
+                    borderTopColor: '#fff',
+                    borderRadius: '50%',
+                  }}
+                />
                 <span>Signing in...</span>
               </>
             ) : (
@@ -213,29 +277,40 @@ export function Login() {
           </button>
         </form>
 
-        {/* Footer Link */}
-        <div style={{ marginTop: '1.75rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          Don't have an account?{' '}
-          <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+        {/* Register link */}
+        <div
+          style={{
+            marginTop: '1.5rem',
+            textAlign: 'center',
+            fontSize: '0.85rem',
+            color: 'var(--text-muted)',
+          }}
+        >
+          Don&apos;t have an account?{' '}
+          <Link
+            to="/signup"
+            id="go-to-signup"
+            style={{ color: 'var(--primary-bright)', fontWeight: 600 }}
+          >
             Create one
           </Link>
         </div>
 
-        {/* Verification Note */}
+        {/* Trust footer */}
         <div
           style={{
-            marginTop: '2rem',
+            marginTop: '1.75rem',
             paddingTop: '1rem',
             borderTop: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '0.4rem',
-            fontSize: '0.725rem',
+            fontSize: '0.72rem',
             color: 'var(--text-muted)',
           }}
         >
-          <ShieldCheck size={14} color="#10b981" />
+          <ShieldCheck size={13} color="var(--esg-accent)" />
           <span>Deterministic calculations. Audit-ready compliance.</span>
         </div>
       </div>
@@ -243,4 +318,4 @@ export function Login() {
   );
 }
 
-export default Login;
+export default CustomerLogin;

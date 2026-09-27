@@ -1,0 +1,48 @@
+# Version control
+.git/
+.gitignore
+.github/
+
+# Python virtual environments & bytecode
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local database files and logs (never bake local db into container)
+carboniq.db
+*.db
+*.sqlite
+*.sqlite3
+instance/
+backend/instance/
+backend/carboniq.db
+*.log
+
+# Secrets and environment files
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env
+frontend/.env.*
+
+# Frontend source & build artifacts
+frontend/
+dist/
+build/
+
+# IDE, OS and agent artifacts
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.agents/
+.gemini/

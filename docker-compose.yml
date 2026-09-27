@@ -1,0 +1,32 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: carboniq-backend
+    image: carboniq-ai-backend:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-production}
+      - FLASK_DEBUG=${FLASK_DEBUG:-0}
+      - SECRET_KEY=${SECRET_KEY:-carboniq-production-secret-key-replace-me}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-carboniq-production-jwt-key-replace-me}
+      - DATABASE_URI=${DATABASE_URI:-sqlite:////app/backend/instance/carboniq.db}
+      - EMISSION_FACTORS_CSV=${EMISSION_FACTORS_CSV:-data/emission_factors.csv}
+      - LYZR_API_KEY=${LYZR_API_KEY:-}
+      - LYZR_AGENT_ID=${LYZR_AGENT_ID:-}
+    volumes:
+      # Named volume to persist SQLite database across container restarts
+      - carboniq_db_data:/app/backend/instance
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  carboniq_db_data:
+    driver: local

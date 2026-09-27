@@ -39,8 +39,8 @@ async function request(endpoint, options = {}) {
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      // Automatic 401 Unauthorized / Expired session handling
-      const isAuthError = response.status === 401 || (response.status === 422 && typeof data?.msg === 'string' && data.msg.toLowerCase().includes('token'));
+      // Automatic 401 Unauthorized / 422 Invalid Token expired session handling
+      const isAuthError = response.status === 401 || response.status === 422;
       if (isAuthError && !endpoint.includes('/auth/login')) {
         try {
           localStorage.removeItem('carboniq_token');
@@ -99,6 +99,11 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(activityData),
       }),
+    resolve: (id, resolutionData) =>
+      request(`/activities/${id}/resolve`, {
+        method: 'POST',
+        body: JSON.stringify(resolutionData),
+      }),
     getSupported: () => request('/activities/supported'),
   },
 
@@ -135,6 +140,11 @@ export const api = {
   // AI Insights (Lyzr agent — reasoning only, never recalculates numbers)
   ai: {
     getInsight: (companyId, context) =>
+      request('/ai/insights', {
+        method: 'POST',
+        body: JSON.stringify({ company_id: companyId, context }),
+      }),
+    getInsights: (companyId, context) =>
       request('/ai/insights', {
         method: 'POST',
         body: JSON.stringify({ company_id: companyId, context }),

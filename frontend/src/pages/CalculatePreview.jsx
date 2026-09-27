@@ -56,6 +56,13 @@ export function CalculatePreview() {
     e.preventDefault();
     setError('');
 
+    if (!activeCompany?.id) {
+      setError(
+        'No organization is assigned to this account. Please contact an administrator to request company access.'
+      );
+      return;
+    }
+
     if (!quantity || Number(quantity) <= 0) {
       setError('Please enter a valid positive quantity.');
       return;
@@ -64,7 +71,7 @@ export function CalculatePreview() {
     setLoading(true);
     try {
       const payload = {
-        company_id: activeCompany?.id,
+        company_id: activeCompany.id,
         activity,
         quantity: Number(quantity),
         unit,
@@ -261,7 +268,7 @@ export function CalculatePreview() {
             </div>
           ) : (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '1.5rem', background: 'rgba(15, 23, 42, 0.6)', padding: '1.25rem', borderRadius: 'var(--radius-md)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '1.5rem', background: 'var(--bg-card-hover)', border: '1px solid var(--border-subtle)', padding: '1.25rem', borderRadius: 'var(--radius-md)' }}>
                 <div>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Scope</span>
                   <div style={{ marginTop: '0.25rem' }}><StatusBadge scope={result.scope} /></div>
@@ -286,7 +293,7 @@ export function CalculatePreview() {
               {result.calculation && (
                 <div style={{ marginBottom: '1.25rem' }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Calculation Arithmetic</span>
-                  <div style={{ fontFamily: 'monospace', fontSize: '0.95rem', padding: '0.85rem 1rem', background: 'rgba(0,0,0,0.4)', borderRadius: 'var(--radius-sm)', color: '#38bdf8', marginTop: '0.35rem' }}>
+                  <div style={{ fontFamily: 'monospace', fontSize: '0.95rem', padding: '0.85rem 1rem', background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', marginTop: '0.35rem' }}>
                     {result.calculation}
                   </div>
                 </div>

@@ -100,7 +100,7 @@ export function Layout() {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/select-account" replace />;
   }
 
   return (
